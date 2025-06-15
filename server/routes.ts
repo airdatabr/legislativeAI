@@ -28,6 +28,24 @@ async function authenticateToken(req: any, res: any, next: any) {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
+  app.get('/api/auth/user', authenticateToken, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Erro ao carregar usuário" });
+    }
+  });
+
   app.post('/api/auth/login', async (req, res) => {
     try {
       const validatedData = loginSchema.parse(req.body);

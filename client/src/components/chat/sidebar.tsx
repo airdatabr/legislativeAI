@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken, getAuthToken } from "@/lib/auth-utils";
 import { useLocation } from "wouter";
+import cabedeloLogo from "@/assets/cabedelo-logo.png";
 
 interface Conversation {
   id: number;
@@ -84,7 +85,17 @@ export default function Sidebar({
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
+          <div className="flex items-center">
+            <img 
+              src={cabedeloLogo} 
+              alt="Cabedelo" 
+              className="h-8 mr-3"
+            />
+            <div>
+              <h1 className="text-sm font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
+              <p className="text-xs text-sidebar-foreground/60">Câmara de Cabedelo</p>
+            </div>
+          </div>
           <div className="relative">
             <button
               className="flex items-center text-sm text-sidebar-foreground hover:text-sidebar-primary focus:outline-none focus:ring-2 focus:ring-sidebar-primary rounded-full p-1"

@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { setAuthToken } from "@/lib/auth-utils";
 import { apiRequest } from "@/lib/queryClient";
+import cabedeloLogo from "@/assets/cabedelo-logo.png";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -62,11 +63,15 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-md w-full space-y-8 p-8">
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-primary rounded-full flex items-center justify-center mb-6">
-            <Gavel className="text-white text-2xl" size={32} />
+          <div className="mx-auto mb-6">
+            <img 
+              src={cabedeloLogo} 
+              alt="Câmara Municipal de Cabedelo" 
+              className="h-20 mx-auto mb-4"
+            />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Assistente Legislativo</h2>
-          <p className="text-sm text-gray-600">Câmara Municipal - Acesso Restrito</p>
+          <p className="text-sm text-gray-600">Câmara Municipal de Cabedelo - Acesso Restrito</p>
         </div>
 
         <Card>
