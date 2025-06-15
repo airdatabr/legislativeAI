@@ -1,0 +1,131 @@
+Documento de Requisitos de Produto (PRD): Assistente Legislativo com IA (MVP)
+Versão: 1.0
+
+Data: 15 de Junho de 2025
+
+Autor: Gemini
+
+Status: Proposta
+
+1. Introdução e Resumo
+Este documento descreve os requisitos para o Produto Mínimo Viável (MVP) de uma aplicação web interna, destinada aos funcionários da Câmara Municipal. A ferramenta, denominada "Assistente Legislativo", tem como objetivo central fornecer uma interface de consulta inteligente e ágil para a base de documentos legislativos do município (leis, decretos, portarias, etc.). A aplicação contará com um sistema de autenticação para garantir o acesso restrito, uma interface de chat similar ao Google Gemini para interação com um modelo de linguagem (LLM) e um histórico de conversas para referência futura.
+
+2. O Problema
+Atualmente, os funcionários da Câmara Municipal, especialmente dos setores jurídico, administrativo e gabinetes, enfrentam desafios significativos ao pesquisar informações na base documental. O processo manual é demorado, propenso a falhas e requer conhecimento prévio da estrutura legislativa para ser eficaz. A dificuldade em localizar rapidamente artigos, revogações ou ementas específicas resulta em atrasos na elaboração de pareceres, respostas a ofícios e na tomada de decisões diárias.
+
+3. Objetivos e Métricas de Sucesso do MVP
+O propósito deste MVP é validar a hipótese de que uma ferramenta de IA pode aumentar drasticamente a eficiência e a precisão dos funcionários na busca por informações legislativas.
+
+Objetivo 1: Aumentar a Eficiência Operacional
+
+Métrica Chave: Reduzir o tempo médio para encontrar uma informação jurídica específica em 70%, em comparação com o método de pesquisa manual.
+
+Objetivo 2: Garantir Usabilidade e Adoção
+
+Métrica Chave: Atingir uma taxa de adoção de 60% entre os usuários-alvo (funcionários selecionados) no primeiro mês após o lançamento.
+
+Métrica Chave: Obter uma pontuação de satisfação do usuário (CSAT) de no mínimo 4 de 5, medida através de um formulário de feedback simples dentro da aplicação.
+
+Objetivo 3: Assegurar a Estabilidade Técnica
+
+Métrica Chave: Manter uma taxa de sucesso superior a 99% nas chamadas de API entre o Frontend e o backend do LLM, com um tempo de resposta (p95) abaixo de 8 segundos.
+
+4. Personas de Usuários
+Persona Primária: O Assessor Jurídico/Legislativo
+
+Necessidades: Precisa de respostas rápidas, precisas e com fontes claras (citação de lei e artigo). Utilizará a ferramenta para acelerar a redação de pareceres, verificar informações sobre vigência, revogações e compilar dados para projetos de lei.
+
+Comportamento: É um usuário avançado, que realizará consultas complexas e valoriza a confiabilidade e a rastreabilidade da informação.
+
+Persona Secundária: O Servidor Administrativo
+
+Necessidades: Precisa de respostas diretas para questões operacionais do dia a dia (ex: "Qual lei regulamenta o estacionamento no centro?", "Quais os requisitos para a licença X?").
+
+Comportamento: Utilizará a ferramenta para tirar dúvidas pontuais e garantir que os procedimentos administrativos estão em conformidade com as normas vigentes.
+
+5. Requisitos Funcionais
+Épico 1: Gestão de Acesso e Autenticação 🔐
+RF-001: Tela de Login: A aplicação deve ter uma tela de login com campos para "E-mail" e "Senha", um link para "Esqueci minha senha" e um botão "Entrar".
+
+RF-002: Autenticação de Usuário: O sistema deve validar as credenciais do usuário contra uma base de dados pré-cadastrada. Mensagens de erro claras devem ser exibidas para credenciais inválidas.
+
+RF-003: Acesso Restrito: Nenhuma rota da aplicação, exceto a de login e recuperação de senha, deve ser acessível a usuários não autenticados.
+
+RF-004: Logout: Deve haver um botão visível no perfil do usuário para encerrar a sessão de forma segura, redirecionando para a tela de login.
+
+Épico 2: Interface Principal de Consulta (Chat) 💬
+RF-005: Layout de Duas Colunas: A tela principal deve ser dividida em uma barra lateral esquerda (para histórico) e a área de chat principal à direita.
+
+RF-006: Campo de Inserção de Consulta: Um campo de texto na parte inferior da área de chat permitirá ao usuário digitar suas perguntas. O campo deve ser multilinha e ter um botão para "Enviar" ou ser acionado pela tecla "Enter".
+
+RF-007: Exibição da Conversa: A área de chat exibirá as perguntas do usuário e as respostas do LLM em formato de diálogo, com diferenciação visual clara entre as partes. A resposta do LLM deve suportar a formatação Markdown para melhor legibilidade (listas, negrito, etc.).
+
+RF-008: Indicador de Processamento: Durante o processamento da consulta pela API, um indicador visual (ex: animação de "digitando...") deve ser exibido para informar que a resposta está sendo gerada.
+
+Épico 3: Histórico de Consultas 📖
+RF-009: Listagem do Histórico: A barra lateral esquerda exibirá uma lista de todas as conversas anteriores do usuário logado, ordenadas cronologicamente (a mais recente no topo).
+
+RF-010: Título da Conversa: Cada item na lista de histórico deve ter um título curto e significativo, gerado automaticamente pela API a partir da primeira pergunta da conversa.
+
+RF-011: Carregar Conversa: Clicar em um item do histórico deve carregar a conversa correspondente na área de chat principal. O item selecionado deve ficar visualmente destacado.
+
+RF-012: Iniciar Nova Conversa: Um botão "Nova Consulta" (ou ícone "+") no topo da barra lateral deve limpar a área de chat e iniciar uma nova conversa, que será adicionada ao histórico após a primeira pergunta.
+
+6. Requisitos de Integração (API)
+O Frontend se comunicará com o backend do LLM através de uma API RESTful segura.
+
+Autenticação: Todas as chamadas para endpoints protegidos devem incluir um Bearer Token (JWT) no header Authorization.
+
+Endpoints Esperados:
+
+POST /api/auth/login
+
+Payload: { "email": "user@email.com", "password": "user_password" }
+
+Resposta (Sucesso): { "token": "JWT_AUTH_TOKEN", "user": { "name": "Nome do Usuário" } }
+
+POST /api/chat/query
+
+Payload: { "question": "Texto da pergunta do usuário", "conversation_id": "optional_id" } (se for uma conversa existente)
+
+Resposta (Sucesso): { "answer": "Resposta em Markdown.", "conversation_id": "new_or_existing_id" }
+
+GET /api/chat/history
+
+Resposta (Sucesso): [ { "id": "convo_id_1", "title": "Lei sobre estacionamento" }, ... ]
+
+GET /api/chat/history/{id}
+
+Resposta (Sucesso): { "id": "convo_id_1", "messages": [ {"role": "user", "content": "..."}, {"role": "assistant", "content": "..."} ] }
+
+7. Requisitos Não Funcionais
+Segurança: Utilização de HTTPS para toda a comunicação. Senhas não devem ser armazenadas em texto plano.
+
+Desempenho: O tempo de carregamento inicial da aplicação (First Contentful Paint) deve ser inferior a 3 segundos.
+
+Compatibilidade: A aplicação deve ser funcional nas duas versões mais recentes dos navegadores Google Chrome, Mozilla Firefox e Microsoft Edge em sistemas operacionais desktop.
+
+Usabilidade: A interface deve ser limpa, intuitiva e autoexplicativa, minimizando a necessidade de treinamento.
+
+8. Fora do Escopo do MVP
+As seguintes funcionalidades não serão incluídas nesta versão para garantir um lançamento focado e rápido:
+
+Cadastro de novos usuários ou painel de administração (será feito via banco de dados).
+
+Recuperação de senha.
+
+Edição ou exclusão de mensagens individuais no chat.
+
+Renomeação manual dos títulos do histórico.
+
+Exclusão de conversas do histórico.
+
+Compartilhamento de conversas.
+
+Upload de arquivos para análise pelo LLM.
+
+Modo escuro (Dark Mode).
+
+Responsividade completa para dispositivos móveis (o foco é o uso em desktop).
+
+Notificações em tempo real.
