@@ -88,7 +88,7 @@ export default function Sidebar({
           <div className="flex items-center">
             <img 
               src={cabedeloLogo} 
-              alt="Cabedelo" 
+              alt="Câmara Municipal de Cabedelo" 
               className="h-8 mr-3"
             />
             <div>

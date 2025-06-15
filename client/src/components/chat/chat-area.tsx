@@ -28,8 +28,8 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: conversation, isLoading } = useQuery({
-    queryKey: ["/api/chat/history", conversationId],
+  const { data: conversation, isLoading, refetch } = useQuery({
+    queryKey: ["/api/chat/history", conversationId, refreshTrigger],
     queryFn: async () => {
       if (!conversationId) return null;
       
@@ -59,6 +59,7 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
     onSuccess: (data) => {
       onMessageSent(data.conversation_id);
       queryClient.invalidateQueries({ queryKey: ["/api/chat/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/history", data.conversation_id] });
       setMessage("");
       setIsGenerating(false);
     },
