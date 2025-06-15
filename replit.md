@@ -102,6 +102,7 @@ This account can be used to access the legislative assistant and test the chat f
 - June 15, 2025. Fixed sidebar layout and logo positioning issues
 - June 15, 2025. Confirmed AI chat functionality is working properly - queries and responses displaying correctly
 - June 15, 2025. Fixed logout functionality - added backend endpoint and proper frontend redirection to home page
+- June 15, 2025. Implemented dual query system: Internet (general GPT) and Laws Database (municipal legislation focus) with toggle selector in chat interface
 
 ## User Preferences
 

@@ -117,12 +117,44 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
     <div className="flex-1 flex flex-col">
       {/* Chat Header */}
       <div className="border-b border-gray-200 p-4 bg-white">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
           {conversation ? conversation.title : "Consulta Legislativa"}
         </h2>
-        <p className="text-sm text-gray-600">
-          Faça suas perguntas sobre leis, decretos e portarias municipais
-        </p>
+        
+        {/* Query Type Selector */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                queryType === 'internet' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setQueryType('internet')}
+            >
+              <Globe className="w-4 h-4 mr-1.5" />
+              Internet
+            </button>
+            <button
+              className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                queryType === 'laws' 
+                  ? 'bg-white text-blue-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              onClick={() => setQueryType('laws')}
+            >
+              <BookOpen className="w-4 h-4 mr-1.5" />
+              Base de Leis
+            </button>
+          </div>
+          
+          <p className="text-sm text-gray-600">
+            {queryType === 'internet' 
+              ? 'Consulta geral sobre legislação'
+              : 'Base de leis municipais de Cabedelo'
+            }
+          </p>
+        </div>
       </div>
 
       {/* Messages Container */}
