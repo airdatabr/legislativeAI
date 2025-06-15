@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Send, Info } from "lucide-react";
+import { Send, Info, Globe, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,7 @@ interface ChatAreaProps {
 export default function ChatArea({ conversationId, onMessageSent, refreshTrigger }: ChatAreaProps) {
   const [message, setMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [queryType, setQueryType] = useState<'internet' | 'laws'>('internet');
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -52,7 +53,7 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (messageData: { question: string; conversationId?: number }) => {
+    mutationFn: async (messageData: { question: string; conversationId?: number; queryType: 'internet' | 'laws' }) => {
       const response = await apiRequest('POST', '/api/chat/query', messageData);
       return response.json();
     },
@@ -81,7 +82,8 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
     setIsGenerating(true);
     sendMessageMutation.mutate({
       question: message.trim(),
-      conversationId: conversationId || undefined
+      conversationId: conversationId || undefined,
+      queryType: queryType
     });
   };
 

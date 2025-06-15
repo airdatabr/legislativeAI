@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { loginSchema, chatQuerySchema } from "@shared/schema";
-import { generateLegislativeResponse, generateConversationTitle } from "./openai";
+import { generateLegislativeResponse, generateConversationTitle, generateLawsResponse } from "./openai";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
