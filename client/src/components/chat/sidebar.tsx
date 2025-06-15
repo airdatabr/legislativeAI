@@ -71,53 +71,74 @@ export default function Sidebar({
     }
   };
 
-  const handleLogout = () => {
-    removeAuthToken();
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
-    });
-    setLocation("/login");
+  const handleLogout = async () => {
+    try {
+      // Chama o endpoint de logout no backend
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${getAuthToken()}`
+        }
+      });
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    } finally {
+      // Remove o token e limpa os dados do usuário
+      removeAuthToken();
+      queryClient.setQueryData(["/api/auth/user"], () => {
+        return null;
+      });
+      queryClient.clear();
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      // Redireciona para a página inicial
+      setLocation("/");
+    }
   };
 
   return (
     <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col">
+      {/* User Menu - Top Right */}
+      <div className="absolute top-4 right-4 z-50">
+        <div className="relative">
+          <button
+            className="flex items-center text-sm text-sidebar-foreground hover:text-sidebar-primary focus:outline-none focus:ring-2 focus:ring-sidebar-primary rounded-full p-2"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+          >
+            <User size={20} />
+          </button>
+          {showUserMenu && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+              <div className="py-1">
+                <div className="px-4 py-2 text-sm text-gray-500 border-b">
+                  {user?.name || "Usuário"}
+                </div>
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2" size={16} />
+                  Sair
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <img 
-              src={cabedeloLogo} 
-              alt="Câmara Municipal de Cabedelo" 
-              className="h-8 mr-3"
-            />
-            <div>
-              <h1 className="text-sm font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
-              <p className="text-xs text-sidebar-foreground/60">Câmara de Cabedelo</p>
-            </div>
-          </div>
-          <div className="relative">
-            <button
-              className="flex items-center text-sm text-sidebar-foreground hover:text-sidebar-primary focus:outline-none focus:ring-2 focus:ring-sidebar-primary rounded-full p-1"
-              onClick={() => setShowUserMenu(!showUserMenu)}
-            >
-              <User className="text-lg mr-2" size={20} />
-              <span>{user?.name || "Usuário"}</span>
-              <ChevronDown className="ml-2" size={16} />
-            </button>
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                <div className="py-1">
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2" size={16} />
-                    Sair
-                  </button>
-                </div>
-              </div>
-            )}
+        <div className="flex flex-col items-center text-center mb-4">
+          <img 
+            src={cabedeloLogo} 
+            alt="Câmara Municipal de Cabedelo" 
+            className="h-12 mb-3"
+          />
+          <div>
+            <h1 className="text-sm font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
+            <p className="text-xs text-sidebar-foreground/60">Câmara de Cabedelo</p>
           </div>
         </div>
         <Button

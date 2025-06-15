@@ -81,6 +81,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/auth/logout', (req, res) => {
+    // Para JWT, o logout é feito no frontend removendo o token
+    res.json({ message: "Logout realizado com sucesso" });
+  });
+
   // Chat routes
   app.post('/api/chat/query', authenticateToken, async (req: any, res) => {
     try {
