@@ -90,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/chat/query', authenticateToken, async (req: any, res) => {
     try {
       const validatedData = chatQuerySchema.parse(req.body);
-      const { question, conversationId } = validatedData;
+      const { question, conversationId, queryType } = validatedData;
       const userId = req.user.id;
 
       let currentConversationId = conversationId;
@@ -112,8 +112,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         content: question
       });
 
-      // Generate AI response
-      const aiResponse = await generateLegislativeResponse(question);
+      // Generate AI response based on query type
+      let aiResponse: string;
+      if (queryType === 'laws') {
+        aiResponse = await generateLawsResponse(question);
+      } else {
+        aiResponse = await generateLegislativeResponse(question);
+      }
 
       // Save AI response
       await storage.createMessage({
@@ -124,7 +129,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         answer: aiResponse,
-        conversation_id: currentConversationId
+        conversation_id: currentConversationId,
+        query_type: queryType
       });
     } catch (error) {
       console.error("Chat query error:", error);

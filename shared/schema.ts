@@ -74,6 +74,7 @@ export const loginSchema = z.object({
 export const chatQuerySchema = z.object({
   question: z.string().min(1),
   conversationId: z.number().optional(),
+  queryType: z.enum(['internet', 'laws']).default('internet'),
 });
 
 // Types
