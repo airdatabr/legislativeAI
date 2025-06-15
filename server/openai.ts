@@ -60,23 +60,48 @@ export async function generateConversationTitle(firstMessage: string): Promise<s
 
 export async function generateLawsResponse(question: string): Promise<string> {
   try {
-    // Para a versão MVP, vamos usar o OpenAI com prompt específico para base de leis
-    // Em produção, isso seria substituído pela LLM interna
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    // Chamada para sua API interna da base de leis
+    const response = await fetch(process.env.INTERNAL_LAWS_API_URL || 'http://localhost:8000/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.INTERNAL_LAWS_API_KEY || ''}`
+      },
+      body: JSON.stringify({
+        message: question,
+        include_sources: true // Incluir fontes para citações específicas
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API da base de leis retornou status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Assumindo que sua API retorna o conteúdo em um campo específico
+    // Você pode ajustar conforme a estrutura real da resposta
+    return data.response || data.message || data.answer || "Não foi possível processar sua consulta sobre a base de leis municipais.";
+    
+  } catch (error) {
+    console.error("Erro ao consultar base de leis interna:", error);
+    
+    // Fallback para OpenAI se a API interna falhar
+    console.log("Usando fallback para OpenAI...");
+    const fallbackResponse = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
           content: `Você é um assistente legislativo especializado na base de leis municipais do Brasil, especificamente da Câmara Municipal de Cabedelo, Paraíba.
 
-IMPORTANTE: Você deve responder EXCLUSIVAMENTE com base em leis, decretos, portarias e regulamentações municipais. NÃO utilize informações da internet ou conhecimento geral.
+IMPORTANTE: Você deve responder EXCLUSIVAMENTE com base em leis, decretos, portarias e regulamentações municipais.
 
 Suas respostas devem:
 - Citar especificamente leis municipais, decretos ou portarias
 - Incluir números de artigos, parágrafos e incisos quando relevante
 - Indicar datas de publicação quando possível
 - Se não encontrar informação específica na base legal municipal, dizer claramente que não há regulamentação municipal específica sobre o assunto
-- Focar em questões de competência municipal (urbanismo, tributos locais, serviços públicos locais, etc.)
 
 Formato da resposta:
 1. Resposta direta à pergunta
@@ -93,9 +118,6 @@ Formato da resposta:
       temperature: 0.3
     });
 
-    return response.choices[0].message.content || "Não foi possível processar sua consulta sobre a base de leis municipais.";
-  } catch (error) {
-    console.error("Erro ao consultar base de leis:", error);
-    throw new Error("Erro ao consultar base de leis municipais");
+    return fallbackResponse.choices[0].message.content || "Erro ao consultar base de leis municipais.";
   }
 }

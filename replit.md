@@ -84,6 +84,8 @@ The application uses a relational database with three main entities:
 - `DATABASE_URL`: PostgreSQL connection string
 - `OPENAI_API_KEY`: OpenAI API key for AI functionality
 - `JWT_SECRET`: Secret key for JWT token signing
+- `INTERNAL_LAWS_API_URL`: URL for internal laws database API (optional, defaults to localhost:8000/chat)
+- `INTERNAL_LAWS_API_KEY`: Authentication key for internal laws API (optional)
 
 ## Test User Account
 
