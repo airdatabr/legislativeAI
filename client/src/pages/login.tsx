@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { setAuthToken } from "@/lib/auth-utils";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import cabedeloLogo from "@/assets/cabedelo-logo.png";
 
 const loginSchema = z.object({
@@ -45,12 +45,19 @@ export default function LoginPage() {
       const result = await response.json();
       
       setAuthToken(result.token);
+      
+      // Invalidate auth queries to trigger refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       toast({
         title: "Login realizado com sucesso",
         description: `Bem-vindo, ${result.user.name}!`,
       });
       
-      setLocation("/");
+      // Small delay to allow query invalidation then redirect
+      setTimeout(() => {
+        setLocation("/");
+      }, 500);
     } catch (err: any) {
       console.error("Login error:", err);
       setError("Credenciais inválidas. Verifique seu e-mail e senha.");

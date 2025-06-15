@@ -85,9 +85,20 @@ The application uses a relational database with three main entities:
 - `OPENAI_API_KEY`: OpenAI API key for AI functionality
 - `JWT_SECRET`: Secret key for JWT token signing
 
+## Test User Account
+
+For testing and demonstration purposes, a test user account has been created:
+- **Email**: admin@cabedelo.pb.gov.br
+- **Password**: password
+
+This account can be used to access the legislative assistant and test the chat functionality.
+
 ## Changelog
 
-- June 15, 2025. Initial setup
+- June 15, 2025. Initial setup with complete legislative assistant application
+- June 15, 2025. Added Câmara Municipal de Cabedelo branding and logo integration
+- June 15, 2025. Created test user account for authentication testing
+- June 15, 2025. Implemented complete chat interface with AI integration
 
 ## User Preferences
 
