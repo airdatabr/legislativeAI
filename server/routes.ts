@@ -60,6 +60,11 @@ async function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
   // Auth routes
   app.get('/api/auth/user', authenticateToken, async (req: any, res) => {
     try {
