@@ -277,31 +277,25 @@ export class DirectStorage implements IStorage {
   }
 
   async updateUser(id: number, userData: any): Promise<any> {
-    const { data, error } = await supabase
-      .from('users')
-      .update({
-        name: userData.name,
-        email: userData.email,
-        role_id: userData.role_id,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select(`
-        *,
-        role:role_id (
-          id,
-          name,
-          description
-        )
-      `)
-      .single();
+    try {
+      const { data, error } = await supabase.rpc('update_user_safe', {
+        p_user_id: id,
+        p_name: userData.name,
+        p_email: userData.email,
+        p_role_id: userData.role_id
+      });
 
-    if (error) {
-      console.error("Error updating user:", error);
-      throw new Error("Erro ao atualizar usuário");
+      if (error) {
+        console.error("Error updating user:", error);
+        throw new Error("Erro ao atualizar usuário");
+      }
+
+      // Return the first row from the function result
+      return Array.isArray(data) ? data[0] : data;
+    } catch (error) {
+      console.error('Update user error:', error);
+      throw error;
     }
-
-    return data;
   }
 
   async deleteUser(id: number): Promise<void> {
