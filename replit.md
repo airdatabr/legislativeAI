@@ -19,7 +19,7 @@ This is a legislative assistant web application built with a modern full-stack a
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js for REST API endpoints
 - **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon serverless PostgreSQL
+- **Database Provider**: Supabase PostgreSQL (configurable)
 - **Authentication**: JWT-based authentication with bcrypt password hashing
 - **AI Integration**: OpenAI GPT-4o for legislative query processing
 
@@ -81,11 +81,23 @@ The application uses a relational database with three main entities:
 - **Deployment**: Configured for autoscale deployment on Replit
 
 ### Environment Variables Required
-- `DATABASE_URL`: PostgreSQL connection string
+- `DATABASE_URL`: PostgreSQL connection string (Supabase or Neon)
 - `OPENAI_API_KEY`: OpenAI API key for AI functionality
 - `JWT_SECRET`: Secret key for JWT token signing
 - `INTERNAL_LAWS_API_URL`: URL for internal laws database API (optional, defaults to localhost:8000/chat)
 - `INTERNAL_LAWS_API_KEY`: Authentication key for internal laws API (optional)
+
+### Supabase Database Setup
+To configure the application with Supabase:
+
+1. Go to the [Supabase dashboard](https://supabase.com/dashboard/projects)
+2. Create a new project if you haven't already
+3. Once in the project page, click the "Connect" button on the top toolbar
+4. Copy URI value under "Connection string" -> "Transaction pooler"
+5. Replace `[YOUR-PASSWORD]` with the database password you set for the project
+6. Update the `DATABASE_URL` environment variable with the Supabase connection string
+
+The application will automatically work with Supabase as it uses standard PostgreSQL connections through Drizzle ORM.
 
 ## Test User Account
 
