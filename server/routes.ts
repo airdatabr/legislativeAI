@@ -200,6 +200,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes - only accessible by administrators
+  app.get('/api/admin/roles', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const roles = await storage.getAllRoles();
+      res.json(roles);
+    } catch (error) {
+      console.error("Roles fetch error:", error);
+      res.status(500).json({ message: "Erro ao carregar funções" });
+    }
+  });
+
   app.post('/api/admin/users', authenticateToken, requireAdmin, async (req: any, res) => {
     try {
       const validatedData = createUserSchema.parse(req.body);
@@ -216,7 +226,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newUser = await storage.createUser({
         name: validatedData.name,
         email: validatedData.email,
-        password: hashedPassword
+        password: hashedPassword,
+        role_id: validatedData.role_id
       });
 
       // Remove password from response

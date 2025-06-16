@@ -7,6 +7,10 @@ export interface IStorage {
   createUser(insertUser: any): Promise<any>;
   getAllUsers(): Promise<any[]>;
   
+  // Role operations
+  getAllRoles(): Promise<any[]>;
+  getRoleById(id: number): Promise<any>;
+  
   // Conversation operations
   createConversation(insertConversation: any): Promise<any>;
   getUserConversations(userId: number): Promise<any[]>;
@@ -117,18 +121,42 @@ export class DirectStorage implements IStorage {
     return data;
   }
 
+  async getAllRoles() {
+    const { data, error } = await supabase
+      .from('role')
+      .select('*')
+      .order('name');
+    
+    if (error) throw error;
+    return data || [];
+  }
+
+  async getRoleById(id: number) {
+    const { data, error } = await supabase
+      .from('role')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  }
+
   async getAllUsers() {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select(`
+        *,
+        role:role_id (
+          id,
+          name,
+          description
+        )
+      `)
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    // Add role field based on email for admin users
-    return (data || []).map(user => ({
-      ...user,
-      role: user.email === 'admin@cabedelo.pb.gov.br' ? 'admin' : 'user'
-    }));
+    return data || [];
   }
 
   async getUserStats() {
