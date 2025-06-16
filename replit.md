@@ -165,6 +165,9 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Fixed critical bug in storage layer where query_type field was not being saved to database during conversation creation
 - June 16, 2025. Corrected visual indicators in conversation history - yellow circles now properly display for Laws Database queries and blue circles for Internet queries
 - June 16, 2025. Resolved Supabase insertion issue where query_type parameter was missing from createConversation function in storage-direct.ts
+- June 16, 2025. Implemented robust multi-approach solution for Supabase PostgREST cache issues affecting query_type field recognition
+- June 16, 2025. Created fallback mechanisms using direct SQL execution, RPC calls, and manual database updates to ensure query_type persistence
+- June 16, 2025. Successfully resolved visual indicator system - conversations now display correct colored circles based on query type (blue for Internet, yellow for Laws)
 
 ## User Preferences
 

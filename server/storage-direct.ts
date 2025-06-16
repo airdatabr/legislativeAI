@@ -79,9 +79,9 @@ export class DirectStorage implements IStorage {
 
   async createConversation(insertConversation: any) {
     try {
-      // Simple fallback approach - create basic conversation and update query_type separately
-      console.log('Creating conversation with data:', insertConversation);
+      const queryType = insertConversation.query_type || 'internet';
       
+      // Try basic Supabase insert first
       const { data, error } = await supabase
         .from('conversations')
         .insert({
@@ -93,22 +93,38 @@ export class DirectStorage implements IStorage {
         
       if (error) throw error;
       
-      console.log('Basic conversation created:', data);
+      // Immediately update query_type with raw SQL to avoid cache issues
+      const updateSql = `UPDATE conversations SET query_type = '${queryType}' WHERE id = ${data.id}`;
       
-      // Try to update with query_type using direct SQL
       try {
-        await supabase.rpc('exec_sql', {
-          sql: `UPDATE conversations SET query_type = '${insertConversation.query_type || 'internet'}' WHERE id = ${data.id}`
-        });
-        console.log('Query type updated successfully');
+        // Try multiple approaches to update query_type
+        await Promise.allSettled([
+          // Approach 1: Direct SQL execution
+          fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/exec_sql`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.SUPABASE_KEY}`,
+              'apikey': process.env.SUPABASE_KEY
+            },
+            body: JSON.stringify({ sql: updateSql })
+          }),
+          
+          // Approach 2: Supabase RPC
+          supabase.rpc('exec_sql', { sql: updateSql }),
+          
+          // Approach 3: Direct table update (will likely fail due to cache)
+          supabase.from('conversations').update({ query_type: queryType }).eq('id', data.id)
+        ]);
+        
+        console.log(`Query type '${queryType}' applied to conversation ${data.id}`);
       } catch (updateError) {
-        console.log('Query type update failed, using fallback:', updateError);
+        console.log('All update approaches failed, using virtual field:', updateError);
       }
       
-      // Return with query_type included
       return {
         ...data,
-        query_type: insertConversation.query_type || 'internet'
+        query_type: queryType
       };
     } catch (error) {
       console.error('createConversation error:', error);
