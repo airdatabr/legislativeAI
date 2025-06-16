@@ -49,26 +49,33 @@ export class DirectStorage implements IStorage {
 
   async createUser(insertUser: any) {
     try {
-      // Create user using basic Supabase insert without role_id to avoid cache issues
+      console.log('Storage createUser called with:', insertUser);
+      
+      // Create user with role_id included
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
           name: insertUser.name,
           email: insertUser.email,
           password: insertUser.password,
+          role_id: insertUser.role_id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .select('*')
         .single();
       
-      if (userError) throw userError;
+      if (userError) {
+        console.error('Supabase insert error:', userError);
+        throw userError;
+      }
       
-      // Return user data with role information based on requested role_id
-      const roleId = insertUser.role_id || 2;
+      console.log('User created successfully:', userData);
+      
+      // Add role name for convenience
+      const roleId = userData.role_id;
       return { 
         ...userData, 
-        role_id: roleId,
         role: roleId === 1 ? 'admin' : 'user' 
       };
     } catch (error) {
@@ -297,4 +304,5 @@ export class DirectStorage implements IStorage {
   }
 }
 
+console.log('Loading storage-direct.ts');
 export const storage = new DirectStorage();
