@@ -78,47 +78,30 @@ export class DirectStorage implements IStorage {
   }
 
   async createConversation(insertConversation: any) {
-    const { data, error } = await supabase
-      .from('conversations')
-      .insert(insertConversation)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
+    try {
+      // Use SQL function to bypass PostgREST cache issues with query_type
+      const { data, error } = await supabase.rpc('create_conversation_with_type', {
+        p_user_id: insertConversation.user_id,
+        p_title: insertConversation.title,
+        p_query_type: insertConversation.query_type || 'internet'
+      });
+      
+      if (error) throw error;
+      return data && data.length > 0 ? data[0] : null;
+    } catch (error) {
+      console.error('createConversation error:', error);
+      throw error;
+    }
   }
 
   async getUserConversations(userId: number) {
     try {
-      // Try to select with query_type first
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('id, title, created_at, updated_at, query_type')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+      // Use SQL function to bypass PostgREST cache issues
+      const { data, error } = await supabase.rpc('get_user_conversations_with_type', {
+        p_user_id: userId
+      });
       
-      if (error) {
-        // If query_type column error, fallback to basic fields
-        if (error.code === '42703') {
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('conversations')
-            .select('id, title, created_at, updated_at')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-          
-          if (fallbackError) throw fallbackError;
-          
-          return (fallbackData || []).map(conv => ({
-            id: conv.id,
-            title: conv.title,
-            query_type: 'internet', // Default for existing conversations
-            date: conv.updated_at || conv.created_at,
-            created_at: conv.created_at,
-            updated_at: conv.updated_at
-          }));
-        }
-        throw error;
-      }
+      if (error) throw error;
       
       // Transform data to include date field expected by frontend
       return (data || []).map(conv => ({
