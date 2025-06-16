@@ -140,6 +140,10 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Successfully resolved PostgREST cache issues preventing user creation - implemented create_user_with_role() SQL function to bypass cache problems
 - June 16, 2025. Fixed role combobox to display correct role names from database instead of hardcoded values - now shows Administrador, Usuário, Vereador, and Assistente
 - June 16, 2025. Completed role system with 4 legislative roles: admin (Administrador), user (Usuário), vereador (Vereador), assistente (Assistente) - all user creation and management now fully functional
+- June 16, 2025. Updated "Users" tab to display dynamic roles from database instead of hardcoded values - now shows correct legislative roles for each user
+- June 16, 2025. Implemented complete user management system with edit and delete buttons for each user in the admin panel
+- June 16, 2025. Added user deletion functionality with proper cascade delete of related conversations and messages - protects main admin user from deletion
+- June 16, 2025. Completed comprehensive user management interface with role-based display and administrative controls
 
 ## User Preferences
 
