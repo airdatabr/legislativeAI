@@ -6,14 +6,10 @@ import * as schema from "@shared/schema";
 let connectionString: string;
 
 if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
-  console.log(`[DB] Detected Supabase credentials, using direct DATABASE_URL for custom domain`);
-  // For custom domains like airdata.com.br, use DATABASE_URL directly
-  if (process.env.DATABASE_URL) {
-    connectionString = process.env.DATABASE_URL;
-    console.log(`[DB] Using DATABASE_URL for custom Supabase domain`);
-  } else {
-    throw new Error("DATABASE_URL required for custom Supabase domain configuration");
-  }
+  console.log(`[DB] Detected Supabase credentials, forcing Supabase connection`);
+  // Force connection to Supabase custom domain
+  connectionString = "postgresql://postgres:98d27237fac179d590315ecc308abd91@supabase.airdata.com.br:5432/postgres";
+  console.log(`[DB] Using forced Supabase connection: supabase.airdata.com.br`);
 } else if (process.env.DATABASE_URL) {
   connectionString = process.env.DATABASE_URL;
   console.log(`[DB] Using DATABASE_URL connection`);
