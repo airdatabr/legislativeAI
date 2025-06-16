@@ -98,16 +98,13 @@ export class DirectStorage implements IStorage {
     if (error) throw error;
     
     // Transform data to include date field expected by frontend
-    const transformedData = (data || []).map(conv => ({
+    return (data || []).map(conv => ({
       id: conv.id,
       title: conv.title,
       date: conv.updated_at || conv.created_at,
       created_at: conv.created_at,
       updated_at: conv.updated_at
     }));
-    
-    console.log('getUserConversations result:', transformedData);
-    return transformedData;
   }
 
   async getConversationWithMessages(conversationId: number, userId: number) {

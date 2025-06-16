@@ -178,13 +178,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const conversations = await storage.getUserConversations(userId);
       
-      const formattedConversations = conversations.map(conv => ({
-        id: conv.id,
-        title: conv.title,
-        date: conv.updatedAt
-      }));
-
-      res.json(formattedConversations);
+      // Return conversations directly as they already have the date field formatted
+      res.json(conversations);
     } catch (error) {
       console.error("History fetch error:", error);
       res.status(500).json({ message: "Erro ao carregar histórico" });
