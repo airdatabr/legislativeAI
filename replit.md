@@ -53,7 +53,7 @@ The application uses a relational database with three main entities:
 ## External Dependencies
 
 ### Core Dependencies
-- **@neondatabase/serverless**: Serverless PostgreSQL database connection
+- **@supabase/supabase-js**: Supabase client for database operations
 - **drizzle-orm**: TypeScript ORM for database operations
 - **openai**: Official OpenAI API client
 - **@tanstack/react-query**: Server state management
@@ -73,7 +73,7 @@ The application uses a relational database with three main entities:
 ### Development Environment
 - **Command**: `npm run dev` runs the development server with hot reload
 - **Port**: Application runs on port 5000
-- **Database**: Uses Neon serverless PostgreSQL via DATABASE_URL environment variable
+- **Database**: Uses Supabase PostgreSQL via SUPABASE_URL and SUPABASE_KEY environment variables
 
 ### Production Build
 - **Frontend Build**: `vite build` creates optimized static assets
@@ -177,6 +177,9 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Implemented 5-day filter for conversation history in sidebar to keep interface clean and organized
 - June 16, 2025. Cleaned up codebase by removing unused PostgreSQL environment variables (DATABASE_URL, PGDATABASE, PGHOST, PGPORT, PGUSER, PGPASSWORD)
 - June 16, 2025. Removed obsolete files: init-db.js, storage.ts, db.ts, storage-supabase.ts, supabase.ts - simplified architecture using only storage-direct.ts
+- June 16, 2025. Implemented navigation buttons in admin panel header: "Voltar ao Chat" and "Sair" for better user experience
+- June 16, 2025. Completed final cleanup of deprecated database parameters from .env file and documentation for clean Replit deployment
+- June 16, 2025. Updated deployment configuration to use only essential Supabase environment variables: SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY, JWT_SECRET, INTERNAL_LAWS_API_URL, INTERNAL_LAWS_API_KEY
 
 ## User Preferences
 
