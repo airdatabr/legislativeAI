@@ -32,9 +32,10 @@ The application uses a relational database with three main entities:
 - **Messages**: Stores individual messages within conversations (both user and assistant messages)
 
 #### API Structure
-- **Authentication Routes**: `/api/auth/login` for user authentication
+- **Authentication Routes**: `/api/auth/login` for user authentication, `/api/auth/user` for user profile
 - **Chat Routes**: `/api/chat/query` for AI queries, `/api/chat/history` for conversation history
-- **Protected Routes**: All chat functionality requires JWT authentication
+- **Admin Routes**: `/api/admin/users` for user management, `/api/admin/stats` for usage statistics
+- **Protected Routes**: All chat functionality requires JWT authentication, admin routes require admin role
 
 #### AI Integration
 - Uses OpenAI GPT-4o model specifically configured for Brazilian municipal legislation
@@ -124,7 +125,11 @@ This account can be used to access the legislative assistant and test the chat f
 - June 15, 2025. Confirmed AI chat functionality is working properly - queries and responses displaying correctly
 - June 15, 2025. Fixed logout functionality - added backend endpoint and proper frontend redirection to home page
 - June 15, 2025. Implemented dual query system: Internet (general GPT) and Laws Database (municipal legislation focus) with toggle selector in chat interface
-- June 16, 2025. Working on migrating database from Neon to Supabase - awaiting correct connection string for custom domain supabase.airdata.com.br
+- June 16, 2025. Successfully migrated database from Neon to Supabase using custom domain supabase.airdata.com.br
+- June 16, 2025. Implemented complete administrative panel with user management and reporting dashboard
+- June 16, 2025. Added admin-only user creation functionality with role-based access control
+- June 16, 2025. Created comprehensive usage statistics and reporting system for administrators
+- June 16, 2025. Added admin menu button in chat sidebar visible only to administrators
 
 ## User Preferences
 
