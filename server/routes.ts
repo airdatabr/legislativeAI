@@ -17,13 +17,27 @@ async function authenticateToken(req: any, res: any, next: any) {
     return res.status(401).json({ message: "Token de acesso requerido" });
   }
 
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) {
-      return res.status(403).json({ message: "Token inválido" });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const user = await storage.getUser(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({ message: 'Usuário não encontrado' });
     }
+    
     req.user = user;
     next();
-  });
+  } catch (error) {
+    return res.status(403).json({ message: 'Token inválido' });
+  }
+}
+
+// Admin middleware
+function requireAdmin(req: any, res: any, next: any) {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem acessar esta funcionalidade.' });
+  }
+  next();
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -180,6 +194,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Conversation fetch error:", error);
       res.status(500).json({ message: "Erro ao carregar conversa" });
+    }
+  });
+
+  // Admin routes - only accessible by administrators
+  app.post('/api/admin/users', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const validatedData = createUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Usuário com este email já existe" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      const newUser = await storage.createUser({
+        name: validatedData.name,
+        email: validatedData.email,
+        password: hashedPassword,
+        role: validatedData.role
+      });
+
+      // Remove password from response
+      const { password, ...userResponse } = newUser;
+      res.status(201).json(userResponse);
+    } catch (error) {
+      console.error("User creation error:", error);
+      res.status(400).json({ message: "Erro ao criar usuário" });
+    }
+  });
+
+  app.get('/api/admin/users', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove passwords from response
+      const usersResponse = users.map(({ password, ...user }) => user);
+      res.json(usersResponse);
+    } catch (error) {
+      console.error("Users fetch error:", error);
+      res.status(500).json({ message: "Erro ao carregar usuários" });
+    }
+  });
+
+  app.get('/api/admin/stats', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const stats = await storage.getUsageStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Stats fetch error:", error);
+      res.status(500).json({ message: "Erro ao carregar estatísticas" });
+    }
+  });
+
+  app.get('/api/admin/user-stats', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const userStats = await storage.getUserStats();
+      res.json(userStats);
+    } catch (error) {
+      console.error("User stats fetch error:", error);
+      res.status(500).json({ message: "Erro ao carregar estatísticas de usuários" });
     }
   });
 
