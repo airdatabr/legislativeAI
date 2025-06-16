@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2 } from "lucide-react";
+import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2, Save, X } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,8 @@ export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("users");
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editingUser, setEditingUser] = useState<any>(null);
 
   const form = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
@@ -165,12 +167,61 @@ export default function AdminPage() {
     },
   });
 
+  // Update user mutation
+  const updateUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: number; userData: any }) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(userData)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao atualizar usuário');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Usuário Atualizado",
+        description: "O usuário foi atualizado com sucesso.",
+      });
+      setEditingUserId(null);
+      setEditingUser(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao Atualizar Usuário",
+        description: error.message || "Ocorreu um erro ao atualizar o usuário.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEditUser = (user: any) => {
-    // Para implementar em versão futura - modal de edição
-    toast({
-      title: "Funcionalidade em Desenvolvimento",
-      description: "A edição de usuários será implementada em breve.",
+    setEditingUserId(user.id);
+    setEditingUser({
+      name: user.name,
+      email: user.email,
+      role_id: user.role_id
     });
+  };
+
+  const handleSaveUser = () => {
+    if (editingUserId && editingUser) {
+      updateUserMutation.mutate({ userId: editingUserId, userData: editingUser });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
+    setEditingUser(null);
   };
 
   const handleDeleteUser = (userId: number) => {
@@ -251,35 +302,98 @@ export default function AdminPage() {
                       const userRole = Array.isArray(roles) ? roles.find((role: any) => role.id === user.role_id) : null;
                       const roleName = userRole?.name || user.role || 'Usuário';
                       
+                      const isEditing = editingUserId === user.id;
+                      
                       return (
                         <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.name}</TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell className="font-medium">
+                            {isEditing ? (
+                              <Input
+                                value={editingUser?.name || ''}
+                                onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                                className="w-full"
+                              />
+                            ) : (
+                              user.name
+                            )}
+                          </TableCell>
                           <TableCell>
-                            <Badge variant={user.role_id === 1 ? 'destructive' : 'default'}>
-                              {roleName}
-                            </Badge>
+                            {isEditing ? (
+                              <Input
+                                value={editingUser?.email || ''}
+                                onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
+                                className="w-full"
+                                type="email"
+                              />
+                            ) : (
+                              user.email
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Select
+                                value={editingUser?.role_id?.toString() || ''}
+                                onValueChange={(value) => setEditingUser({...editingUser, role_id: parseInt(value)})}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Selecione uma função" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.isArray(roles) && roles.map((role: any) => (
+                                    <SelectItem key={role.id} value={role.id.toString()}>
+                                      {role.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Badge variant={user.role_id === 1 ? 'destructive' : 'default'}>
+                                {roleName}
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell>
                             {new Date(user.created_at).toLocaleDateString('pt-BR')}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditUser(user)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteUser(user.id)}
-                                disabled={user.id === 1} // Não permitir deletar o admin principal
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {isEditing ? (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleSaveUser}
+                                    disabled={updateUserMutation.isPending}
+                                  >
+                                    <Save className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCancelEdit}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditUser(user)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user.id)}
+                                    disabled={user.id === 1}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
