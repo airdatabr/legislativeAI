@@ -48,17 +48,17 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
-    // Remove role field for now since Supabase doesn't have it
-    const { role, ...userWithoutRole } = insertUser;
-    
     const { data, error } = await supabase
       .from('users')
-      .insert(userWithoutRole)
-      .select()
+      .insert(insertUser)
+      .select('*')
       .single();
     
     if (error) throw error;
-    return { ...data, role: role || 'user' };
+    
+    // Add role information based on role_id
+    const roleInfo = insertUser.role_id === 1 ? 'admin' : 'user';
+    return { ...data, role: roleInfo };
   }
 
   async createConversation(insertConversation: any) {
@@ -122,7 +122,17 @@ export class DirectStorage implements IStorage {
   }
 
   async getAllRoles() {
-    // Return hardcoded roles for now since we have permission issues with the role table
+    try {
+      // Try direct SQL query first
+      const result = await supabase.rpc('get_roles');
+      if (result.data) {
+        return result.data;
+      }
+    } catch (error) {
+      console.error('RPC error:', error);
+    }
+    
+    // Fallback to static roles
     return [
       { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
       { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
