@@ -1,20 +1,17 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
-
-neonConfig.webSocketConstructor = ws;
 
 // Check for Supabase configuration first, then fallback to DATABASE_URL
 let connectionString: string;
 
 if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
-  // Construct Supabase connection string
+  // Extract project reference from Supabase URL
   const supabaseUrl = new URL(process.env.SUPABASE_URL);
-  const host = supabaseUrl.hostname;
-  const projectRef = host.split('.')[0];
+  const projectRef = supabaseUrl.hostname.split('.')[0];
   
-  connectionString = `postgresql://postgres.${projectRef}:${process.env.SUPABASE_KEY}@aws-0-us-east-1.pooler.supabase.com:6543/postgres`;
+  // Use service_role key for direct database connection
+  connectionString = `postgresql://postgres.${projectRef}:${process.env.SUPABASE_KEY}@aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require`;
 } else if (process.env.DATABASE_URL) {
   connectionString = process.env.DATABASE_URL;
 } else {
