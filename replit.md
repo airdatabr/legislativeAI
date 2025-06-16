@@ -159,6 +159,9 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Removed unnecessary database connection variables, keeping only the two essential Supabase credentials for cleaner setup
 - June 16, 2025. Added server restart functionality to Settings tab with dedicated "Reiniciar Servidor" button for applying environment variable changes
 - June 16, 2025. Implemented secure server restart endpoint that gracefully restarts the application after configuration updates
+- June 16, 2025. Implemented Municipal Legislation API following OpenAI request/response pattern with configurable URL and authentication key
+- June 16, 2025. API de Legislação Municipal now uses identical structure to ChatGPT API for seamless integration with custom legislative databases
+- June 16, 2025. Added temporary OpenAI fallback configuration for testing Municipal Laws API functionality before connecting to actual legislative database
 
 ## User Preferences
 
