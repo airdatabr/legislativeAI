@@ -182,6 +182,8 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Updated deployment configuration to use only essential Supabase environment variables: SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY, JWT_SECRET, INTERNAL_LAWS_API_URL, INTERNAL_LAWS_API_KEY
 - June 16, 2025. Implemented automatic removal of deprecated PostgreSQL variables in server/index.ts to ensure clean Replit deployment without legacy database references
 - June 16, 2025. Removed PostgreSQL system dependency from Replit environment to prevent automatic injection of deprecated variables during deployment
+- June 16, 2025. Created comprehensive Linux deployment guide (DEPLOY_LINUX.md) with step-by-step instructions for production deployment on Linux servers
+- June 16, 2025. Added health check endpoint (/health) for production monitoring and deployment verification
 
 ## User Preferences
 
