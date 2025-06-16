@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2, Save, X } from "lucide-react";
+import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2, Save, X, Settings, Key, Eye, EyeOff } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("users");
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [showPasswords, setShowPasswords] = useState<{[key: string]: boolean}>({});
+  const [envVars, setEnvVars] = useState<{[key: string]: string}>({});
 
   const form = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
@@ -88,6 +90,18 @@ export default function AdminPage() {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
       });
       if (!response.ok) throw new Error('Failed to fetch user stats');
+      return response.json();
+    }
+  });
+
+  const { data: envSettings = {}, isLoading: envLoading } = useQuery({
+    queryKey: ['/api/admin/env-settings'],
+    enabled: user?.role === 'admin',
+    queryFn: async () => {
+      const response = await fetch('/api/admin/env-settings', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch environment settings');
       return response.json();
     }
   });
@@ -230,6 +244,55 @@ export default function AdminPage() {
     }
   };
 
+  // Environment variables mutation
+  const updateEnvMutation = useMutation({
+    mutationFn: async (envData: { [key: string]: string }) => {
+      const response = await fetch('/api/admin/env-settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(envData)
+      });
+      if (!response.ok) throw new Error('Failed to update environment variables');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sucesso",
+        description: "Variáveis de ambiente atualizadas com sucesso!",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/env-settings'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao Atualizar Configurações",
+        description: error.message || "Ocorreu um erro ao atualizar as configurações.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEnvUpdate = (key: string, value: string) => {
+    setEnvVars(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveEnvSettings = () => {
+    updateEnvMutation.mutate(envVars);
+  };
+
+  const togglePasswordVisibility = (key: string) => {
+    setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Initialize environment variables when data loads
+  useEffect(() => {
+    if (envSettings && Object.keys(envSettings).length > 0) {
+      setEnvVars(envSettings);
+    }
+  }, [envSettings]);
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -258,7 +321,7 @@ export default function AdminPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Usuários
@@ -270,6 +333,10 @@ export default function AdminPage() {
           <TabsTrigger value="reports" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Relatórios
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Configurações
           </TabsTrigger>
         </TabsList>
 
