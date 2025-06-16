@@ -65,8 +65,8 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
-      .eq('userId', userId)
-      .order('createdAt', { ascending: false });
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     return data || [];
@@ -78,7 +78,7 @@ export class SupabaseStorage implements IStorage {
       .from('conversations')
       .select('*')
       .eq('id', conversationId)
-      .eq('userId', userId)
+      .eq('user_id', userId)
       .single();
     
     if (convError && convError.code !== 'PGRST116') throw convError;
@@ -88,8 +88,8 @@ export class SupabaseStorage implements IStorage {
     const { data: messages, error: msgError } = await supabase
       .from('messages')
       .select('*')
-      .eq('conversationId', conversationId)
-      .order('createdAt', { ascending: true });
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
     
     if (msgError) throw msgError;
 

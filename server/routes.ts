@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!currentConversationId) {
         const title = await generateConversationTitle(question);
         const newConversation = await storage.createConversation({
-          userId,
+          user_id: userId,
           title
         });
         currentConversationId = newConversation.id;
