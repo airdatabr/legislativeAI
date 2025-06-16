@@ -231,7 +231,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/users', authenticateToken, requireAdmin, async (req: any, res) => {
     try {
-      const validatedData = createUserSchema.parse(req.body);
+      console.log("Raw request body:", req.body);
+      
+      // Validate input with detailed error handling
+      const parseResult = createUserSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        console.log("Validation failed:", parseResult.error.issues);
+        return res.status(400).json({ 
+          message: "Dados inválidos", 
+          errors: parseResult.error.issues 
+        });
+      }
+      
+      const validatedData = parseResult.data;
+      console.log("Validated data:", validatedData);
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(validatedData.email);
@@ -242,18 +255,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Hash password
       const hashedPassword = await bcrypt.hash(validatedData.password, 10);
       
-      const newUser = await storage.createUser({
+      const userData = {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
         role_id: validatedData.role_id
-      });
+      };
+      console.log("User data being sent to storage:", userData);
+      
+      const newUser = await storage.createUser(userData);
 
       // Remove password from response
       const { password, ...userResponse } = newUser;
       res.status(201).json(userResponse);
     } catch (error) {
       console.error("User creation error:", error);
+      if (error.code === 'VALIDATION_ERROR') {
+        console.error("Validation details:", error.issues);
+      }
       res.status(400).json({ message: "Erro ao criar usuário" });
     }
   });
