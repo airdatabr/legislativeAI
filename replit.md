@@ -84,7 +84,8 @@ The application uses a relational database with three main entities:
 ### Environment Variables Required
 
 **Database Configuration:**
-- `SUPABASE_CONNECTION_STRING`: PostgreSQL connection string from Supabase
+- `SUPABASE_URL`: Project URL from Supabase dashboard
+- `SUPABASE_KEY`: Anonymous public key from Supabase dashboard
 
 **Other Required Variables:**
 - `OPENAI_API_KEY`: OpenAI API key for AI functionality
@@ -97,13 +98,14 @@ To configure the application with Supabase:
 
 1. Go to the [Supabase dashboard](https://supabase.com/dashboard/projects)
 2. Create a new project if you haven't already
-3. Navigate to Settings > Database > Connection string > Transaction pooler
-4. Copy the connection string and replace `[YOUR-PASSWORD]` with your actual database password
-5. Set this complete connection string as the `SUPABASE_CONNECTION_STRING` environment variable
+3. Navigate to Settings > API
+4. Copy the Project URL and set it as `SUPABASE_URL`
+5. Copy the anon public key and set it as `SUPABASE_KEY`
 
 **Example configuration:**
 ```
-SUPABASE_CONNECTION_STRING=postgresql://postgres.projectref:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=https://projectref.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ## Test User Account
@@ -153,8 +155,8 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Completed dual query system visualization - users can now visually distinguish between Internet (GPT) and Laws Database queries in the sidebar conversation history
 - June 16, 2025. Implemented comprehensive Settings tab in admin panel with organized configuration blocks for OpenAI, Supabase, Authentication, and Laws API
 - June 16, 2025. Created secure environment variable management system with password visibility toggles and color-coded configuration cards for better organization
-- June 16, 2025. Simplified Supabase configuration by removing redundant DATABASE_URL and consolidating to single SUPABASE_CONNECTION_STRING variable
-- June 16, 2025. Updated database connection logic to use direct Supabase connection string for cleaner configuration management
+- June 16, 2025. Simplified Supabase configuration to use only SUPABASE_URL and SUPABASE_KEY standard parameters as requested
+- June 16, 2025. Removed unnecessary database connection variables, keeping only the two essential Supabase credentials for cleaner setup
 
 ## User Preferences
 

@@ -727,23 +727,36 @@ export default function AdminPage() {
                     </CardHeader>
                     <CardContent className="space-y-4 p-6">
                       <div className="space-y-2">
-                        <Label htmlFor="supabase-connection">String de Conexão do Supabase</Label>
+                        <Label htmlFor="supabase-url">URL do Projeto Supabase</Label>
+                        <Input
+                          id="supabase-url"
+                          type="text"
+                          value={envVars['SUPABASE_URL'] || ''}
+                          onChange={(e) => handleEnvUpdate('SUPABASE_URL', e.target.value)}
+                          placeholder="https://projectref.supabase.co"
+                        />
+                        <p className="text-sm text-gray-500">
+                          URL base do seu projeto Supabase (Project Settings &gt; API)
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="supabase-key">Chave Anônima do Supabase</Label>
                         <div className="flex gap-2">
                           <Input
-                            id="supabase-connection"
-                            type={showPasswords['SUPABASE_CONNECTION_STRING'] ? 'text' : 'password'}
-                            value={envVars['SUPABASE_CONNECTION_STRING'] || ''}
-                            onChange={(e) => handleEnvUpdate('SUPABASE_CONNECTION_STRING', e.target.value)}
-                            placeholder="postgresql://postgres.projectref:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+                            id="supabase-key"
+                            type={showPasswords['SUPABASE_KEY'] ? 'text' : 'password'}
+                            value={envVars['SUPABASE_KEY'] || ''}
+                            onChange={(e) => handleEnvUpdate('SUPABASE_KEY', e.target.value)}
+                            placeholder="eyJ..."
                             className="flex-1"
                           />
                           <Button
                             type="button"
                             variant="outline"
                             size="icon"
-                            onClick={() => togglePasswordVisibility('SUPABASE_CONNECTION_STRING')}
+                            onClick={() => togglePasswordVisibility('SUPABASE_KEY')}
                           >
-                            {showPasswords['SUPABASE_CONNECTION_STRING'] ? (
+                            {showPasswords['SUPABASE_KEY'] ? (
                               <EyeOff className="h-4 w-4" />
                             ) : (
                               <Eye className="h-4 w-4" />
@@ -751,7 +764,7 @@ export default function AdminPage() {
                           </Button>
                         </div>
                         <p className="text-sm text-gray-500">
-                          String de conexão obtida no painel do Supabase: Settings &gt; Database &gt; Connection string &gt; Transaction pooler
+                          Chave anônima pública para acesso ao Supabase (Project Settings &gt; API)
                         </p>
                       </div>
                     </CardContent>
