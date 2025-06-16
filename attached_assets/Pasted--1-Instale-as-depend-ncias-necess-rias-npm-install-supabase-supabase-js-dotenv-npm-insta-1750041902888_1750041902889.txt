@@ -1,0 +1,79 @@
+// 1. Instale as dependências necessárias
+// npm install @supabase/supabase-js dotenv
+// npm install --save-dev @types/node typescript
+
+// 2. Importe as bibliotecas necessárias
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
+
+// 3. Carregue as variáveis de ambiente do arquivo .env
+dotenv.config()
+
+// 4. Obtenha as credenciais do Supabase das variáveis de ambiente
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_KEY
+
+// 5. Validação das variáveis de ambiente
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('SUPABASE_URL e SUPABASE_KEY devem estar definidas nas variáveis de ambiente')
+}
+
+// 6. Crie o cliente do Supabase
+// O cliente é usado para todas as operações com o banco de dados
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    // Define se o cliente deve persistir sessões (útil para aplicações server-side)
+    persistSession: false,
+    // Auto refresh token para manter a sessão ativa
+    autoRefreshToken: true,
+  },
+  // Configurações adicionais opcionais
+  global: {
+    // Headers customizados para todas as requisições
+    headers: { 'x-application-name': 'minha-aplicacao' },
+  },
+  // Timeout para requisições (em milissegundos)
+  db: {
+    schema: 'public', // Schema padrão do banco
+  },
+})
+
+// 7. Exemplo de função para testar a conexão
+export async function testConnection() {
+  try {
+    // Tenta fazer uma query simples para verificar a conexão
+    const { data, error } = await supabase
+      .from('users') // Substitua pelo nome de uma tabela existente
+      .select('count')
+      .limit(1)
+    
+    if (error) {
+      console.error('Erro ao conectar com o Supabase:', error.message)
+      return false
+    }
+    
+    console.log('Conexão com Supabase estabelecida com sucesso!')
+    return true
+  } catch (err) {
+    console.error('Erro inesperado:', err)
+    return false
+  }
+}
+
+// 8. Exemplos de operações básicas com o banco de dados
+
+// SELECT - Buscar dados
+export async function buscarDados() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('created_at', { ascending: false }) // Ordenação
+    .limit(10) // Limite de resultados
+
+  if (error) {
+    console.error('Erro ao buscar dados:', error)
+    return null
+  }
+
+  return data
+}

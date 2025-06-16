@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { storage } from "./storage";
+import { storage } from "./storage-supabase";
 import { loginSchema, chatQuerySchema } from "@shared/schema";
 import { generateLegislativeResponse, generateConversationTitle, generateLawsResponse } from "./openai";
 

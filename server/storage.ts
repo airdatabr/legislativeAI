@@ -1,6 +1,5 @@
 import { users, conversations, messages, type User, type InsertUser, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { SupabaseStorage, testConnection } from "./supabase";
 
 export interface IStorage {
   // User operations
