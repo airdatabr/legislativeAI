@@ -90,14 +90,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/chat/query', authenticateToken, async (req: any, res) => {
     try {
       const validatedData = chatQuerySchema.parse(req.body);
-      const { message, conversationId, queryType } = validatedData;
+      const { question, conversationId, queryType } = validatedData;
       const userId = req.user.id;
 
       let currentConversationId = conversationId;
 
       // If no conversation ID, create new conversation
       if (!currentConversationId) {
-        const title = await generateConversationTitle(message);
+        const title = await generateConversationTitle(question);
         const newConversation = await storage.createConversation({
           userId,
           title
@@ -109,15 +109,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createMessage({
         conversationId: currentConversationId,
         role: 'user',
-        content: message
+        content: question
       });
 
       // Generate AI response based on query type
       let aiResponse: string;
       if (queryType === 'laws') {
-        aiResponse = await generateLawsResponse(message);
+        aiResponse = await generateLawsResponse(question);
       } else {
-        aiResponse = await generateLegislativeResponse(message);
+        aiResponse = await generateLegislativeResponse(question);
       }
 
       // Save AI response

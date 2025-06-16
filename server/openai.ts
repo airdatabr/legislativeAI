@@ -38,6 +38,11 @@ export async function generateLegislativeResponse(question: string): Promise<str
 
 export async function generateConversationTitle(firstMessage: string): Promise<string> {
   try {
+    // Validate input
+    if (!firstMessage || firstMessage.trim() === '') {
+      return "Nova Consulta";
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -45,7 +50,7 @@ export async function generateConversationTitle(firstMessage: string): Promise<s
           role: "system",
           content: "Gere um título curto e descritivo (máximo 40 caracteres) para uma conversa sobre legislação municipal baseado na primeira pergunta. Responda apenas com o título, sem aspas ou formatação adicional."
         },
-        { role: "user", content: firstMessage }
+        { role: "user", content: firstMessage.trim() }
       ],
       temperature: 0.3,
       max_tokens: 20,
