@@ -48,17 +48,20 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
-    const { data, error } = await supabase
-      .from('users')
-      .insert(insertUser)
-      .select('*')
-      .single();
+    const { data, error } = await supabase.rpc('create_user_with_role', {
+      p_name: insertUser.name,
+      p_email: insertUser.email,
+      p_password: insertUser.password,
+      p_role_id: insertUser.role_id || 2
+    });
     
     if (error) throw error;
     
-    // Add role information based on role_id
-    const roleInfo = insertUser.role_id === 1 ? 'admin' : 'user';
-    return { ...data, role: roleInfo };
+    const newUser = data[0];
+    return { 
+      ...newUser, 
+      role: newUser.role_id === 1 ? 'admin' : 'user' 
+    };
   }
 
   async createConversation(insertConversation: any) {
