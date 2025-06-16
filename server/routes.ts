@@ -196,11 +196,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversa não encontrada" });
       }
 
-      const formattedMessages = conversation.messages.map(msg => ({
-        role: msg.role,
-        content: msg.content,
-        timestamp: msg.createdAt
-      }));
+      const formattedMessages = conversation.messages.map(msg => {
+        console.log('Message data:', msg);
+        return {
+          role: msg.role,
+          content: msg.content,
+          timestamp: msg.created_at || new Date().toISOString()
+        };
+      });
 
       res.json({
         id: conversation.id,

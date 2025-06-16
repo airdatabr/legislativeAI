@@ -9,7 +9,17 @@ interface MessageProps {
 
 export default function Message({ role, content, timestamp }: MessageProps) {
   const formatTimestamp = (ts: string) => {
+    if (!ts) {
+      return '';
+    }
+    
     const date = new Date(ts);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return '';
+    }
+    
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
