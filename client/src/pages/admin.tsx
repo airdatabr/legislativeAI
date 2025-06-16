@@ -651,6 +651,197 @@ export default function AdminPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Configurações do Sistema
+              </CardTitle>
+              <CardDescription>
+                Gerencie as variáveis de ambiente e configurações da aplicação
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {envLoading ? (
+                <div className="text-center py-8">
+                  <div className="text-lg">Carregando configurações...</div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* OpenAI Configuration */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Key className="h-4 w-4" />
+                      Configuração da OpenAI
+                    </h3>
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="openai-key">Chave da API OpenAI</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="openai-key"
+                            type={showPasswords['OPENAI_API_KEY'] ? 'text' : 'password'}
+                            value={envVars['OPENAI_API_KEY'] || ''}
+                            onChange={(e) => handleEnvUpdate('OPENAI_API_KEY', e.target.value)}
+                            placeholder="sk-..."
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => togglePasswordVisibility('OPENAI_API_KEY')}
+                          >
+                            {showPasswords['OPENAI_API_KEY'] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          Chave necessária para as funcionalidades de IA do sistema
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Database Configuration */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Configuração do Banco de Dados</h3>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="database-url">URL do Banco de Dados</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="database-url"
+                            type={showPasswords['DATABASE_URL'] ? 'text' : 'password'}
+                            value={envVars['DATABASE_URL'] || ''}
+                            onChange={(e) => handleEnvUpdate('DATABASE_URL', e.target.value)}
+                            placeholder="postgresql://..."
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => togglePasswordVisibility('DATABASE_URL')}
+                          >
+                            {showPasswords['DATABASE_URL'] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          String de conexão com o banco de dados PostgreSQL
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Authentication Configuration */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Configuração de Autenticação</h3>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="jwt-secret">Chave Secreta JWT</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="jwt-secret"
+                            type={showPasswords['JWT_SECRET'] ? 'text' : 'password'}
+                            value={envVars['JWT_SECRET'] || ''}
+                            onChange={(e) => handleEnvUpdate('JWT_SECRET', e.target.value)}
+                            placeholder="Digite uma chave secreta segura..."
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => togglePasswordVisibility('JWT_SECRET')}
+                          >
+                            {showPasswords['JWT_SECRET'] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          Chave usada para assinar tokens JWT de autenticação
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Laws API Configuration */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">API de Legislação Municipal</h3>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="laws-api-url">URL da API de Leis</Label>
+                        <Input
+                          id="laws-api-url"
+                          type="text"
+                          value={envVars['INTERNAL_LAWS_API_URL'] || ''}
+                          onChange={(e) => handleEnvUpdate('INTERNAL_LAWS_API_URL', e.target.value)}
+                          placeholder="http://localhost:8000/chat"
+                        />
+                        <p className="text-sm text-gray-500">
+                          URL do endpoint da API interna de legislação municipal
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="laws-api-key">Chave da API de Leis</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="laws-api-key"
+                            type={showPasswords['INTERNAL_LAWS_API_KEY'] ? 'text' : 'password'}
+                            value={envVars['INTERNAL_LAWS_API_KEY'] || ''}
+                            onChange={(e) => handleEnvUpdate('INTERNAL_LAWS_API_KEY', e.target.value)}
+                            placeholder="Chave de autenticação da API..."
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => togglePasswordVisibility('INTERNAL_LAWS_API_KEY')}
+                          >
+                            {showPasswords['INTERNAL_LAWS_API_KEY'] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          Chave de autenticação para acessar a API de legislação
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end pt-6 border-t">
+                    <Button 
+                      onClick={handleSaveEnvSettings}
+                      disabled={updateEnvMutation.isPending}
+                      className="min-w-[120px]"
+                    >
+                      {updateEnvMutation.isPending ? "Salvando..." : "Salvar Configurações"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );

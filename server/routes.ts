@@ -339,6 +339,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Environment settings endpoints
+  app.get('/api/admin/env-settings', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      // Return current environment variables (masked for security)
+      const envSettings = {
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY ? '***' + process.env.OPENAI_API_KEY.slice(-4) : '',
+        DATABASE_URL: process.env.DATABASE_URL ? '***' + process.env.DATABASE_URL.slice(-10) : '',
+        JWT_SECRET: process.env.JWT_SECRET ? '***' + process.env.JWT_SECRET.slice(-4) : '',
+        INTERNAL_LAWS_API_URL: process.env.INTERNAL_LAWS_API_URL || '',
+        INTERNAL_LAWS_API_KEY: process.env.INTERNAL_LAWS_API_KEY ? '***' + process.env.INTERNAL_LAWS_API_KEY.slice(-4) : ''
+      };
+      res.json(envSettings);
+    } catch (error) {
+      console.error("Error fetching environment settings:", error);
+      res.status(500).json({ message: "Erro ao buscar configurações" });
+    }
+  });
+
+  app.put('/api/admin/env-settings', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const envUpdates = req.body;
+      
+      // Update environment variables in runtime
+      Object.keys(envUpdates).forEach(key => {
+        if (envUpdates[key] && envUpdates[key] !== '' && !envUpdates[key].startsWith('***')) {
+          process.env[key] = envUpdates[key];
+        }
+      });
+
+      // Write to .env file for persistence
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const envPath = path.join(process.cwd(), '.env');
+      let envContent = '';
+      
+      // Read existing .env file if it exists
+      if (fs.existsSync(envPath)) {
+        envContent = fs.readFileSync(envPath, 'utf8');
+      }
+      
+      // Update or add each environment variable
+      Object.keys(envUpdates).forEach(key => {
+        const value = envUpdates[key];
+        if (value && value !== '' && !value.startsWith('***')) {
+          const regex = new RegExp(`^${key}=.*$`, 'gm');
+          const newLine = `${key}=${value}`;
+          
+          if (envContent.match(regex)) {
+            envContent = envContent.replace(regex, newLine);
+          } else {
+            envContent += envContent.endsWith('\n') ? newLine + '\n' : '\n' + newLine + '\n';
+          }
+        }
+      });
+      
+      // Write updated content back to .env file
+      fs.writeFileSync(envPath, envContent);
+      
+      res.json({ message: "Configurações atualizadas com sucesso. Reinicie a aplicação para aplicar todas as mudanças." });
+    } catch (error) {
+      console.error("Error updating environment settings:", error);
+      res.status(500).json({ message: "Erro ao atualizar configurações" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
