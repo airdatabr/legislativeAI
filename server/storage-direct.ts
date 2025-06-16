@@ -51,32 +51,28 @@ export class DirectStorage implements IStorage {
     try {
       console.log('Storage createUser called with:', insertUser);
       
-      // Create user with role_id included
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .insert({
-          name: insertUser.name,
-          email: insertUser.email,
-          password: insertUser.password,
-          role_id: insertUser.role_id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select('*')
-        .single();
+      // Use SQL function to bypass PostgREST cache issues
+      const { data: userData, error: userError } = await supabase.rpc('create_user_with_role', {
+        p_name: insertUser.name,
+        p_email: insertUser.email,
+        p_password: insertUser.password,
+        p_role_id: insertUser.role_id
+      });
       
       if (userError) {
-        console.error('Supabase insert error:', userError);
+        console.error('Supabase RPC error:', userError);
         throw userError;
       }
       
-      console.log('User created successfully:', userData);
+      console.log('User created successfully via RPC:', userData);
+      
+      // Return the first row from the function result
+      const user = Array.isArray(userData) ? userData[0] : userData;
       
       // Add role name for convenience
-      const roleId = userData.role_id;
       return { 
-        ...userData, 
-        role: roleId === 1 ? 'admin' : 'user' 
+        ...user, 
+        role: user.role_id === 1 ? 'admin' : 'user' 
       };
     } catch (error) {
       console.error('Create user error:', error);
