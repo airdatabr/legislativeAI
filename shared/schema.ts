@@ -14,18 +14,18 @@ export const users = pgTable("users", {
 
 export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  user_id: integer("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
 });
 
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
-  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  conversation_id: integer("conversation_id").notNull().references(() => conversations.id),
   role: text("role").notNull(), // 'user' or 'assistant'
   content: text("content").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 // Relations
@@ -35,7 +35,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 
 export const conversationsRelations = relations(conversations, ({ one, many }) => ({
   user: one(users, {
-    fields: [conversations.userId],
+    fields: [conversations.user_id],
     references: [users.id],
   }),
   messages: many(messages),
@@ -43,7 +43,7 @@ export const conversationsRelations = relations(conversations, ({ one, many }) =
 
 export const messagesRelations = relations(messages, ({ one }) => ({
   conversation: one(conversations, {
-    fields: [messages.conversationId],
+    fields: [messages.conversation_id],
     references: [conversations.id],
   }),
 }));

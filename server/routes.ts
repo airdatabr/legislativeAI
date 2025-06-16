@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { storage } from "./storage-supabase";
+import { storage } from "./storage-direct";
 import { loginSchema, chatQuerySchema } from "@shared/schema";
 import { generateLegislativeResponse, generateConversationTitle, generateLawsResponse } from "./openai";
 
@@ -107,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Save user message
       await storage.createMessage({
-        conversationId: currentConversationId,
+        conversation_id: currentConversationId,
         role: 'user',
         content: question
       });
@@ -122,7 +122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Save AI response
       await storage.createMessage({
-        conversationId: currentConversationId,
+        conversation_id: currentConversationId,
         role: 'assistant',
         content: aiResponse
       });
