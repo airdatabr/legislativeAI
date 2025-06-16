@@ -293,6 +293,44 @@ export default function AdminPage() {
     }
   }, [envSettings]);
 
+  // Server restart mutation
+  const restartMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/restart-server', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to restart server');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Servidor Reiniciado",
+        description: "O servidor foi reiniciado com sucesso! As novas configurações estão ativas.",
+      });
+      // Reload the page after a short delay to reconnect
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao Reiniciar Servidor",
+        description: error.message || "Ocorreu um erro ao reiniciar o servidor.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRestartServer = () => {
+    if (window.confirm('Tem certeza que deseja reiniciar o servidor? Isso aplicará todas as configurações salvas.')) {
+      restartMutation.mutate();
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -869,8 +907,18 @@ export default function AdminPage() {
                     </CardContent>
                   </Card>
 
-                  {/* Save Button */}
-                  <div className="flex justify-end pt-6 border-t">
+                  {/* Action Buttons */}
+                  <div className="flex justify-between items-center pt-6 border-t">
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleRestartServer}
+                        disabled={restartMutation.isPending}
+                        variant="outline"
+                        className="min-w-[120px]"
+                      >
+                        {restartMutation.isPending ? "Reiniciando..." : "Reiniciar Servidor"}
+                      </Button>
+                    </div>
                     <Button 
                       onClick={handleSaveEnvSettings}
                       disabled={updateEnvMutation.isPending}

@@ -157,6 +157,8 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Created secure environment variable management system with password visibility toggles and color-coded configuration cards for better organization
 - June 16, 2025. Simplified Supabase configuration to use only SUPABASE_URL and SUPABASE_KEY standard parameters as requested
 - June 16, 2025. Removed unnecessary database connection variables, keeping only the two essential Supabase credentials for cleaner setup
+- June 16, 2025. Added server restart functionality to Settings tab with dedicated "Reiniciar Servidor" button for applying environment variable changes
+- June 16, 2025. Implemented secure server restart endpoint that gracefully restarts the application after configuration updates
 
 ## User Preferences
 

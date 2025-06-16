@@ -399,10 +399,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Write updated content back to .env file
       fs.writeFileSync(envPath, envContent);
       
-      res.json({ message: "Configurações atualizadas com sucesso. Reinicie a aplicação para aplicar todas as mudanças." });
+      res.json({ message: "Configurações atualizadas com sucesso. Use o botão 'Reiniciar Servidor' para aplicar as mudanças." });
     } catch (error) {
       console.error("Error updating environment settings:", error);
       res.status(500).json({ message: "Erro ao atualizar configurações" });
+    }
+  });
+
+  // Server restart endpoint
+  app.post('/api/admin/restart-server', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      console.log("Admin triggered server restart");
+      res.json({ message: "Servidor será reiniciado em breve..." });
+      
+      // Restart the server process after a short delay
+      setTimeout(() => {
+        console.log("Restarting server...");
+        process.exit(0); // This will trigger the development server to restart
+      }, 1000);
+    } catch (error) {
+      console.error("Error restarting server:", error);
+      res.status(500).json({ message: "Erro ao reiniciar servidor" });
     }
   });
 
