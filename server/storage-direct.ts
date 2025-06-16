@@ -6,6 +6,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<any>;
   createUser(insertUser: any): Promise<any>;
   getAllUsers(): Promise<any[]>;
+  updateUser(id: number, userData: any): Promise<any>;
   deleteUser(id: number): Promise<void>;
   
   // Role operations
@@ -273,6 +274,34 @@ export class DirectStorage implements IStorage {
       total_messages: totalMessages || 0,
       most_active_users: mostActiveUsers
     };
+  }
+
+  async updateUser(id: number, userData: any): Promise<any> {
+    const { data, error } = await supabase
+      .from('users')
+      .update({
+        name: userData.name,
+        email: userData.email,
+        role_id: userData.role_id,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select(`
+        *,
+        role:role_id (
+          id,
+          name,
+          description
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error("Error updating user:", error);
+      throw new Error("Erro ao atualizar usuário");
+    }
+
+    return data;
   }
 
   async deleteUser(id: number): Promise<void> {

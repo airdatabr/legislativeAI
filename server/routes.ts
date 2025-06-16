@@ -270,6 +270,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/admin/users/:id', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { name, email, role_id } = req.body;
+      
+      // Validate required fields
+      if (!name || !email || !role_id) {
+        return res.status(400).json({ message: "Nome, email e função são obrigatórios" });
+      }
+      
+      // Check if user exists
+      const existingUser = await storage.getUser(userId);
+      if (!existingUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Check if email is already in use by another user
+      const emailUser = await storage.getUserByEmail(email);
+      if (emailUser && emailUser.id !== userId) {
+        return res.status(400).json({ message: "Este email já está em uso" });
+      }
+      
+      const updatedUser = await storage.updateUser(userId, { name, email, role_id });
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("User update error:", error);
+      res.status(500).json({ message: "Erro ao atualizar usuário" });
+    }
+  });
+
   app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, async (req: any, res) => {
     try {
       const userId = parseInt(req.params.id);
