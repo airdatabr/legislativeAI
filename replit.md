@@ -148,6 +148,7 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Resolved Supabase PostgREST cache issues affecting user update operations - implemented robust update function that bypasses cache problems
 - June 16, 2025. Completed comprehensive user management interface with full CRUD operations: create, read, update, delete with role-based display and administrative controls - all functionality tested and working
 - June 16, 2025. Fixed "Invalid Date" issue in conversation history - implemented robust date handling with proper field mapping from database and improved error handling in frontend formatting
+- June 16, 2025. Fixed "Invalid Date" issue in message timestamps - corrected field mapping from created_at to timestamp and added validation in formatTimestamp function to handle invalid dates gracefully
 
 ## User Preferences
 
