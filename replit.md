@@ -81,23 +81,34 @@ The application uses a relational database with three main entities:
 - **Deployment**: Configured for autoscale deployment on Replit
 
 ### Environment Variables Required
-- `DATABASE_URL`: PostgreSQL connection string (Supabase or Neon)
+
+**Database Configuration (choose one):**
+- Option 1: `SUPABASE_URL` and `SUPABASE_KEY` for Supabase database
+- Option 2: `DATABASE_URL` for direct PostgreSQL connection string
+
+**Other Required Variables:**
 - `OPENAI_API_KEY`: OpenAI API key for AI functionality
 - `JWT_SECRET`: Secret key for JWT token signing
 - `INTERNAL_LAWS_API_URL`: URL for internal laws database API (optional, defaults to localhost:8000/chat)
 - `INTERNAL_LAWS_API_KEY`: Authentication key for internal laws API (optional)
 
-### Supabase Database Setup
-To configure the application with Supabase:
+### Supabase Database Setup (Recommended)
+To configure the application with Supabase using the simplified configuration:
 
 1. Go to the [Supabase dashboard](https://supabase.com/dashboard/projects)
 2. Create a new project if you haven't already
-3. Once in the project page, click the "Connect" button on the top toolbar
-4. Copy URI value under "Connection string" -> "Transaction pooler"
-5. Replace `[YOUR-PASSWORD]` with the database password you set for the project
-6. Update the `DATABASE_URL` environment variable with the Supabase connection string
+3. In your project settings, copy:
+   - **Project URL** (set as `SUPABASE_URL`)
+   - **Project API Key** - use the service_role key (set as `SUPABASE_KEY`)
+4. The application will automatically construct the proper connection string
 
-The application will automatically work with Supabase as it uses standard PostgreSQL connections through Drizzle ORM.
+**Example configuration:**
+```
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_KEY=your-service-role-key
+```
+
+The system automatically detects Supabase configuration and constructs the appropriate PostgreSQL connection string.
 
 ## Test User Account
 
