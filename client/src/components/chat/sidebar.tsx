@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, LogOut, ChevronDown } from "lucide-react";
+import { Plus, User, LogOut, ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -116,6 +116,18 @@ export default function Sidebar({
                 <div className="px-4 py-2 text-sm text-gray-500 border-b">
                   {user?.name || "Usuário"}
                 </div>
+                {user?.role === 'admin' && (
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      setLocation('/admin');
+                    }}
+                  >
+                    <Settings className="mr-2" size={16} />
+                    Painel Administrativo
+                  </button>
+                )}
                 <button
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
                   onClick={handleLogout}
