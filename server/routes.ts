@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role || (user.email === 'admin@cabedelo.pb.gov.br' ? 'admin' : 'user')
       });
     } catch (error) {
       console.error("Get user error:", error);
@@ -216,8 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newUser = await storage.createUser({
         name: validatedData.name,
         email: validatedData.email,
-        password: hashedPassword,
-        role: validatedData.role
+        password: hashedPassword
       });
 
       // Remove password from response

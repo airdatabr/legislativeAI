@@ -44,14 +44,17 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
+    // Remove role field for now since Supabase doesn't have it
+    const { role, ...userWithoutRole } = insertUser;
+    
     const { data, error } = await supabase
       .from('users')
-      .insert(insertUser)
+      .insert(userWithoutRole)
       .select()
       .single();
     
     if (error) throw error;
-    return data;
+    return { ...data, role: role || 'user' };
   }
 
   async createConversation(insertConversation: any) {
@@ -121,7 +124,11 @@ export class DirectStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    // Add role field based on email for admin users
+    return (data || []).map(user => ({
+      ...user,
+      role: user.email === 'admin@cabedelo.pb.gov.br' ? 'admin' : 'user'
+    }));
   }
 
   async getUserStats() {
