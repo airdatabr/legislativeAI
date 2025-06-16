@@ -1,6 +1,15 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Remove deprecated PostgreSQL environment variables for clean deployment
+const deprecatedVars = ['DATABASE_URL', 'PGDATABASE', 'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD'];
+deprecatedVars.forEach(varName => {
+  if (process.env[varName]) {
+    delete process.env[varName];
+    console.log(`Removed deprecated variable: ${varName}`);
+  }
+});
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
