@@ -12,6 +12,7 @@ interface Conversation {
   id: number;
   title: string;
   date: string;
+  query_type?: string;
 }
 
 interface SidebarProps {
@@ -200,11 +201,23 @@ export default function Sidebar({
                 }`}
                 onClick={() => onConversationSelect(conversation.id)}
               >
-                <div className="font-medium text-sm text-sidebar-foreground truncate">
-                  {conversation.title}
-                </div>
-                <div className="text-xs text-sidebar-foreground/60 mt-1">
-                  {conversation.date}
+                <div className="flex items-start gap-2">
+                  <div 
+                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                      conversation.query_type === 'laws' 
+                        ? 'bg-yellow-500' 
+                        : 'bg-blue-500'
+                    }`}
+                    title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm text-sidebar-foreground truncate">
+                      {conversation.title}
+                    </div>
+                    <div className="text-xs text-sidebar-foreground/60 mt-1">
+                      {conversation.date}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))

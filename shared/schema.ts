@@ -24,6 +24,7 @@ export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
   user_id: integer("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
+  query_type: text("query_type").default("internet"), // 'internet' or 'laws'
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });

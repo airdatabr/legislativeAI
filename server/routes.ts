@@ -135,7 +135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const title = await generateConversationTitle(question);
         const newConversation = await storage.createConversation({
           user_id: userId,
-          title
+          title,
+          query_type: queryType
         });
         currentConversationId = newConversation.id;
       }

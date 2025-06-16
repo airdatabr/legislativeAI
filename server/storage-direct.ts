@@ -91,7 +91,7 @@ export class DirectStorage implements IStorage {
   async getUserConversations(userId: number) {
     const { data, error } = await supabase
       .from('conversations')
-      .select('id, title, created_at, updated_at')
+      .select('id, title, query_type, created_at, updated_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     
@@ -101,6 +101,7 @@ export class DirectStorage implements IStorage {
     return (data || []).map(conv => ({
       id: conv.id,
       title: conv.title,
+      query_type: conv.query_type || 'internet',
       date: conv.updated_at || conv.created_at,
       created_at: conv.created_at,
       updated_at: conv.updated_at
