@@ -48,25 +48,22 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
-    // Use raw SQL to create user with role_id, bypassing cache issues
-    const { data, error } = await supabase
-      .from('users')
-      .insert({
-        name: insertUser.name,
-        email: insertUser.email,
-        password: insertUser.password,
-        role_id: insertUser.role_id || 2,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .select('*')
-      .single();
+    // Use the new SQL function to create user with role_id
+    const { data, error } = await supabase.rpc('insert_user_complete', {
+      p_name: insertUser.name,
+      p_email: insertUser.email,
+      p_password: insertUser.password,
+      p_role_id: insertUser.role_id || 2
+    });
     
     if (error) throw error;
     
+    // Parse JSON result from function
+    const userData = typeof data === 'string' ? JSON.parse(data) : data;
+    
     return { 
-      ...data, 
-      role: data.role_id === 1 ? 'admin' : 'user' 
+      ...userData, 
+      role: userData.role_id === 1 ? 'admin' : 'user' 
     };
   }
 
