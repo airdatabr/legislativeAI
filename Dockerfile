@@ -9,8 +9,8 @@ WORKDIR /app
 # Copiar arquivos de dependências
 COPY package*.json ./
 
-# Instalar dependências
-RUN npm ci --only=production
+# Instalar TODAS as dependências (incluindo dev)
+RUN npm ci
 
 # Copiar código fonte
 COPY . .
@@ -18,12 +18,16 @@ COPY . .
 # Construir aplicação
 RUN npm run build
 
+# Remover dependências de desenvolvimento após o build
+RUN npm prune --production
+
 # Criar usuário não-root
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
 # Alterar proprietário dos arquivos
 RUN chown -R nextjs:nodejs /app
+
 USER nextjs
 
 # Expor porta
