@@ -72,7 +72,7 @@ export const loginSchema = z.object({
 });
 
 export const chatQuerySchema = z.object({
-  message: z.string().min(1),
+  question: z.string().min(1),
   conversationId: z.number().optional(),
   queryType: z.enum(['internet', 'laws']).default('internet'),
 });
