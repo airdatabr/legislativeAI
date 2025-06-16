@@ -124,7 +124,7 @@ This account can be used to access the legislative assistant and test the chat f
 - June 15, 2025. Confirmed AI chat functionality is working properly - queries and responses displaying correctly
 - June 15, 2025. Fixed logout functionality - added backend endpoint and proper frontend redirection to home page
 - June 15, 2025. Implemented dual query system: Internet (general GPT) and Laws Database (municipal legislation focus) with toggle selector in chat interface
-- June 16, 2025. Successfully migrated database from Neon to Supabase with PostgreSQL driver - authentication and chat history fully functional
+- June 16, 2025. Working on migrating database from Neon to Supabase - awaiting correct connection string for custom domain supabase.airdata.com.br
 
 ## User Preferences
 
