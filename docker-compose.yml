@@ -1,10 +1,11 @@
 version: '3.8'
-
 services:
-  assistente-legislativo:
-    build: .
-    container_name: assistente-legislativo
-    restart: unless-stopped
+  app:
+    image: minha-imagem:latest  # ✅ Com tag específica
+    deploy:
+      replicas: 1
+      restart_policy:           # ✅ Usar restart_policy em deploy
+        condition: any
     ports:
       - "5000:5000"
     environment:
