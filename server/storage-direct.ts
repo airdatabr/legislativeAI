@@ -278,20 +278,46 @@ export class DirectStorage implements IStorage {
 
   async updateUser(id: number, userData: any): Promise<any> {
     try {
-      const { data, error } = await supabase.rpc('update_user_safe', {
-        p_user_id: id,
-        p_name: userData.name,
-        p_email: userData.email,
-        p_role_id: userData.role_id
-      });
+      // First verify user exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', id)
+        .single();
 
-      if (error) {
-        console.error("Error updating user:", error);
+      if (!existingUser) {
+        throw new Error("Usuário não encontrado");
+      }
+
+      // Update using simple approach
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          name: userData.name,
+          email: userData.email,
+          role_id: userData.role_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (updateError) {
+        console.error("Error updating user:", updateError);
         throw new Error("Erro ao atualizar usuário");
       }
 
-      // Return the first row from the function result
-      return Array.isArray(data) ? data[0] : data;
+      // Fetch updated user data
+      const { data: updatedUser, error: fetchError } = await supabase
+        .from('users')
+        .select('id, name, email, role_id, created_at, updated_at')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching updated user:", fetchError);
+        throw new Error("Erro ao buscar usuário atualizado");
+      }
+
+      return updatedUser;
     } catch (error) {
       console.error('Update user error:', error);
       throw error;
