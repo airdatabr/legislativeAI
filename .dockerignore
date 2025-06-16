@@ -1,0 +1,12 @@
+node_modules
+.git
+.gitignore
+README.md
+.env
+.cache
+dist
+.replit
+.config
+*.log
+.DS_Store
+Thumbs.db
