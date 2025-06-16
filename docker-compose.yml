@@ -7,6 +7,19 @@ services:
       replicas: 1
       restart_policy:
         condition: any
+      labels:
+        # Configurações do Traefik
+        - "traefik.enable=true"
+        - "traefik.http.routers.legislative-ai.rule=Host(`legislative-ai.airdata.com.br`)"
+        - "traefik.http.routers.legislative-ai.entrypoints=websecure"
+        - "traefik.http.routers.legislative-ai.tls=true"
+        - "traefik.http.routers.legislative-ai.tls.certresolver=le"
+        - "traefik.http.services.legislative-ai.loadbalancer.server.port=5000"
+        # Redirect HTTP para HTTPS
+        - "traefik.http.routers.legislative-ai-http.rule=Host(`legislative-ai.airdata.com.br`)"
+        - "traefik.http.routers.legislative-ai-http.entrypoints=web"
+        - "traefik.http.routers.legislative-ai-http.middlewares=redirect-to-https"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     environment:
       - NODE_ENV=production
       - SESSION_SECRET=${SESSION_SECRET}
@@ -25,65 +38,15 @@ services:
       retries: 3
       start_period: 30s
     networks:
-      - app_network
-
-  nginx:
-    image: nginx:alpine
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - certbot_www:/var/www/certbot/:ro
-      - certbot_conf:/etc/nginx/ssl/:ro
-    # Configuração inline do nginx usando command
-    command: |
-      sh -c "cat > /etc/nginx/nginx.conf << 'EOF'
-      events {
-          worker_connections 1024;
-      }
-      http {
-          include       /etc/nginx/mime.types;
-          default_type  application/octet-stream;
-          
-          upstream app {
-              server app:5000;
-          }
-          
-          server {
-              listen 80;
-              server_name legislative-ai.airdata.com.br;
-              
-              location /.well-known/acme-challenge/ {
-                  root /var/www/certbot;
-              }
-              
-              location / {
-                  proxy_pass http://app;
-                  proxy_set_header Host \$$host;
-                  proxy_set_header X-Real-IP \$$remote_addr;
-                  proxy_set_header X-Forwarded-For \$$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto \$$scheme;
-              }
-          }
-      }
-      EOF
-      && nginx -g 'daemon off;'"
-    networks:
+      - traefik-public
       - app_network
 
 volumes:
   app_data:
-    driver: local
-  certbot_www:
-    driver: local
-  certbot_conf:
-    driver: local
 
 networks:
+  traefik-public:
+    external: true
   app_network:
     driver: overlay
     attachable: true
