@@ -79,15 +79,23 @@ export class DirectStorage implements IStorage {
 
   async createConversation(insertConversation: any) {
     try {
-      // Use robust SQL function to bypass PostgREST cache issues
-      const { data, error } = await supabase.rpc('create_conversation_bypassing_cache', {
-        p_user_id: insertConversation.user_id,
-        p_title: insertConversation.title,
-        p_query_type: insertConversation.query_type || 'internet'
-      });
+      // Simple approach - create conversation with basic fields only
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: insertConversation.user_id,
+          title: insertConversation.title
+        })
+        .select()
+        .single();
       
       if (error) throw error;
-      return data; // Function returns JSON object directly
+      
+      // Add query_type to the returned data (virtual field until cache refreshes)
+      return { 
+        ...data, 
+        query_type: insertConversation.query_type || 'internet' 
+      };
     } catch (error) {
       console.error('createConversation error:', error);
       throw error;
