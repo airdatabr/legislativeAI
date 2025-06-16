@@ -81,51 +81,17 @@ export class DirectStorage implements IStorage {
     try {
       const queryType = insertConversation.query_type || 'internet';
       
-      // Try basic Supabase insert first
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: insertConversation.user_id,
-          title: insertConversation.title
-        })
-        .select()
-        .single();
-        
+      // Use SQL function to bypass all cache issues
+      const { data, error } = await supabase.rpc('insert_conversation_with_type', {
+        p_user_id: insertConversation.user_id,
+        p_title: insertConversation.title,
+        p_query_type: queryType
+      });
+      
       if (error) throw error;
       
-      // Immediately update query_type with raw SQL to avoid cache issues
-      const updateSql = `UPDATE conversations SET query_type = '${queryType}' WHERE id = ${data.id}`;
-      
-      try {
-        // Try multiple approaches to update query_type
-        await Promise.allSettled([
-          // Approach 1: Direct SQL execution
-          fetch(`${process.env.SUPABASE_URL}/rest/v1/rpc/exec_sql`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.SUPABASE_KEY}`,
-              'apikey': process.env.SUPABASE_KEY
-            },
-            body: JSON.stringify({ sql: updateSql })
-          }),
-          
-          // Approach 2: Supabase RPC
-          supabase.rpc('exec_sql', { sql: updateSql }),
-          
-          // Approach 3: Direct table update (will likely fail due to cache)
-          supabase.from('conversations').update({ query_type: queryType }).eq('id', data.id)
-        ]);
-        
-        console.log(`Query type '${queryType}' applied to conversation ${data.id}`);
-      } catch (updateError) {
-        console.log('All update approaches failed, using virtual field:', updateError);
-      }
-      
-      return {
-        ...data,
-        query_type: queryType
-      };
+      // Return the first row from the function result
+      return Array.isArray(data) ? data[0] : data;
     } catch (error) {
       console.error('createConversation error:', error);
       throw error;
