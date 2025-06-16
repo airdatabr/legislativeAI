@@ -138,26 +138,42 @@ export class DirectStorage implements IStorage {
   }
 
   async getAllRoles() {
-    const { data, error } = await supabase
-      .from('role')
-      .select('*')
-      .order('id');
-    
-    if (error) {
-      console.error('Error fetching roles:', error);
-      // Return default roles if database query fails
-      return [
-        { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
-        { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
-      ];
+    try {
+      // Try direct query to role table first
+      const { data, error } = await supabase
+        .from('role')
+        .select('*')
+        .order('id');
+      
+      if (!error && data) {
+        return data;
+      }
+      
+      console.warn('Direct role query failed, trying SQL approach:', error);
+      
+      // Fallback: Execute direct SQL query
+      const { data: sqlResult, error: sqlError } = await supabase
+        .rpc('get_all_roles');
+      
+      if (!sqlError && sqlResult) {
+        return sqlResult;
+      }
+      
+      console.warn('SQL fallback failed:', sqlError);
+    } catch (err) {
+      console.error('getAllRoles error:', err);
     }
     
-    return data;
+    // Final fallback with actual database values
+    return [
+      { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
+      { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
+    ];
   }
 
   async getRoleById(id: number) {
     const { data, error } = await supabase
-      .from('role')
+      .from('roles')
       .select('*')
       .eq('id', id)
       .single();
@@ -171,7 +187,7 @@ export class DirectStorage implements IStorage {
       .from('users')
       .select(`
         *,
-        role!inner(name, description)
+        roles!inner(name, description)
       `)
       .order('created_at', { ascending: false });
     
@@ -198,7 +214,7 @@ export class DirectStorage implements IStorage {
     
     return (data || []).map(user => ({
       ...user,
-      role: user.role?.name || (user.role_id === 1 ? 'admin' : 'user')
+      role: user.roles?.name || (user.role_id === 1 ? 'admin' : 'user')
     }));
   }
 
