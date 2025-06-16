@@ -90,8 +90,8 @@ The application uses a relational database with three main entities:
 **Other Required Variables:**
 - `OPENAI_API_KEY`: OpenAI API key for AI functionality
 - `JWT_SECRET`: Secret key for JWT token signing
-- `INTERNAL_LAWS_API_URL`: URL for internal laws database API (optional, defaults to localhost:8000/chat)
-- `INTERNAL_LAWS_API_KEY`: Authentication key for internal laws API (optional)
+- `INTERNAL_LAWS_API_URL`: URL for internal laws database API
+- `INTERNAL_LAWS_API_KEY`: Authentication key for internal laws API
 
 ### Supabase Database Setup
 To configure the application with Supabase:
@@ -174,6 +174,9 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Set up Municipal Legislation API parameters using OpenAI credentials as temporary development solution
 - June 16, 2025. Installed and configured dotenv package to properly load environment variables from .env file
 - June 16, 2025. Confirmed all administrative settings now display correctly in configuration panel including API parameters
+- June 16, 2025. Implemented 5-day filter for conversation history in sidebar to keep interface clean and organized
+- June 16, 2025. Cleaned up codebase by removing unused PostgreSQL environment variables (DATABASE_URL, PGDATABASE, PGHOST, PGPORT, PGUSER, PGPASSWORD)
+- June 16, 2025. Removed obsolete files: init-db.js, storage.ts, db.ts, storage-supabase.ts, supabase.ts - simplified architecture using only storage-direct.ts
 
 ## User Preferences
 
