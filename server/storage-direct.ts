@@ -139,32 +139,36 @@ export class DirectStorage implements IStorage {
 
   async getAllRoles() {
     try {
-      // Try direct query to role table first
-      const { data, error } = await supabase
+      // First try the view approach
+      const { data: viewData, error: viewError } = await supabase
+        .from('roles_view')
+        .select('*');
+      
+      if (!viewError && viewData && viewData.length > 0) {
+        console.log('Successfully loaded roles from view:', viewData);
+        return viewData;
+      }
+      
+      console.warn('View query failed, trying direct table access:', viewError);
+      
+      // Fallback to direct table query
+      const { data: tableData, error: tableError } = await supabase
         .from('role')
         .select('*')
         .order('id');
       
-      if (!error && data) {
-        return data;
+      if (!tableError && tableData && tableData.length > 0) {
+        console.log('Successfully loaded roles from table:', tableData);
+        return tableData;
       }
       
-      console.warn('Direct role query failed, trying SQL approach:', error);
-      
-      // Fallback: Execute direct SQL query
-      const { data: sqlResult, error: sqlError } = await supabase
-        .rpc('get_all_roles');
-      
-      if (!sqlError && sqlResult) {
-        return sqlResult;
-      }
-      
-      console.warn('SQL fallback failed:', sqlError);
+      console.warn('Table query also failed:', tableError);
     } catch (err) {
       console.error('getAllRoles error:', err);
     }
     
-    // Final fallback with actual database values
+    // Return the actual values that exist in the database
+    console.log('Using database fallback values');
     return [
       { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
       { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
@@ -173,7 +177,7 @@ export class DirectStorage implements IStorage {
 
   async getRoleById(id: number) {
     const { data, error } = await supabase
-      .from('roles')
+      .from('role')
       .select('*')
       .eq('id', id)
       .single();
@@ -183,39 +187,23 @@ export class DirectStorage implements IStorage {
   }
 
   async getAllUsers() {
-    const { data, error } = await supabase
+    // Get users and roles separately to avoid cache issues
+    const { data: userData, error: userError } = await supabase
       .from('users')
-      .select(`
-        *,
-        roles!inner(name, description)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
     
-    if (error) {
-      console.error('Error fetching users with roles:', error);
-      // Fallback: get users and roles separately
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (userError) throw userError;
-      
-      const roles = await this.getAllRoles();
-      
-      return (userData || []).map(user => {
-        const userRole = roles.find(r => r.id === user.role_id);
-        return {
-          ...user,
-          role: userRole?.name || (user.role_id === 1 ? 'admin' : 'user')
-        };
-      });
-    }
+    if (userError) throw userError;
     
-    return (data || []).map(user => ({
-      ...user,
-      role: user.roles?.name || (user.role_id === 1 ? 'admin' : 'user')
-    }));
+    const roles = await this.getAllRoles();
+    
+    return (userData || []).map(user => {
+      const userRole = roles.find((r: any) => r.id === user.role_id);
+      return {
+        ...user,
+        role: userRole?.name || (user.role_id === 1 ? 'admin' : 'user')
+      };
+    });
   }
 
   async getUserStats() {
