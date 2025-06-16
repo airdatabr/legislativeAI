@@ -5,6 +5,7 @@ export interface IStorage {
   getUser(id: number): Promise<any>;
   getUserByEmail(email: string): Promise<any>;
   createUser(insertUser: any): Promise<any>;
+  getAllUsers(): Promise<any[]>;
   
   // Conversation operations
   createConversation(insertConversation: any): Promise<any>;
@@ -13,6 +14,10 @@ export interface IStorage {
   
   // Message operations
   createMessage(insertMessage: any): Promise<any>;
+  
+  // Admin operations
+  getUserStats(): Promise<any>;
+  getUsageStats(): Promise<any>;
 }
 
 export class DirectStorage implements IStorage {
@@ -107,6 +112,97 @@ export class DirectStorage implements IStorage {
     
     if (error) throw error;
     return data;
+  }
+
+  async getAllUsers() {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  }
+
+  async getUserStats() {
+    // Get user statistics with conversation and message counts
+    const { data, error } = await supabase
+      .from('users')
+      .select(`
+        id,
+        name,
+        email,
+        role,
+        created_at,
+        conversations:conversations(count),
+        messages:conversations(messages(count))
+      `);
+    
+    if (error) throw error;
+    
+    // Process the data to get proper counts
+    const stats = data?.map(user => ({
+      ...user,
+      conversation_count: user.conversations?.[0]?.count || 0,
+      message_count: user.messages?.reduce((total: number, conv: any) => 
+        total + (conv.messages?.[0]?.count || 0), 0) || 0
+    })) || [];
+    
+    return stats;
+  }
+
+  async getUsageStats() {
+    // Get overall usage statistics
+    const { count: totalUsers, error: userError } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+    
+    const { count: totalConversations, error: convError } = await supabase
+      .from('conversations')
+      .select('*', { count: 'exact', head: true });
+    
+    const { count: totalMessages, error: msgError } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true });
+
+    // Get most active users by conversation count
+    const { data: conversationCounts, error: activeError } = await supabase
+      .from('conversations')
+      .select('user_id, users!inner(name, email)')
+      .order('created_at', { ascending: false });
+
+    if (userError || convError || msgError || activeError) {
+      throw userError || convError || msgError || activeError;
+    }
+
+    // Process most active users
+    const userActivity: { [key: number]: { name: string; email: string; count: number } } = {};
+    
+    conversationCounts?.forEach(conv => {
+      const userId = conv.user_id;
+      const user = conv.users;
+      if (userActivity[userId]) {
+        userActivity[userId].count++;
+      } else {
+        userActivity[userId] = {
+          name: user.name,
+          email: user.email,
+          count: 1
+        };
+      }
+    });
+
+    const mostActiveUsers = Object.entries(userActivity)
+      .map(([userId, data]) => ({ user_id: parseInt(userId), ...data }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return {
+      total_users: totalUsers || 0,
+      total_conversations: totalConversations || 0,
+      total_messages: totalMessages || 0,
+      most_active_users: mostActiveUsers
+    };
   }
 }
 

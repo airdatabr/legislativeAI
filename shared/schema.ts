@@ -8,8 +8,9 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  role: text("role").notNull().default("user"), // 'admin' or 'user'
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
 });
 
 export const conversations = pgTable("conversations", {
@@ -75,6 +76,13 @@ export const chatQuerySchema = z.object({
   question: z.string().min(1),
   conversationId: z.number().optional(),
   queryType: z.enum(['internet', 'laws']).default('internet'),
+});
+
+export const createUserSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  role: z.enum(["admin", "user"]).default("user"),
 });
 
 // Types

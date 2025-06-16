@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { storage } from "./storage-direct";
-import { loginSchema, chatQuerySchema } from "@shared/schema";
+import { loginSchema, chatQuerySchema, createUserSchema } from "@shared/schema";
 import { generateLegislativeResponse, generateConversationTitle, generateLawsResponse } from "./openai";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
