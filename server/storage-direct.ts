@@ -117,11 +117,17 @@ export class DirectStorage implements IStorage {
 
   async getUserConversations(userId: number) {
     try {
-      // Now with query_type field available
+      // Calculate date 5 days ago
+      const fiveDaysAgo = new Date();
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+      const fiveDaysAgoISO = fiveDaysAgo.toISOString();
+
+      // Filter conversations from last 5 days
       const { data, error } = await supabase
         .from('conversations')
         .select('id, title, created_at, updated_at, query_type')
         .eq('user_id', userId)
+        .gte('created_at', fiveDaysAgoISO)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
