@@ -290,7 +290,7 @@ export default function AdminPage() {
                             ) : roles && Array.isArray(roles) && roles.length > 0 ? (
                               roles.map((role: any) => (
                                 <SelectItem key={role.id} value={role.id.toString()}>
-                                  {role.name === 'admin' ? 'Administrador' : 'Usuário'}
+                                  {role.name}
                                 </SelectItem>
                               ))
                             ) : (
