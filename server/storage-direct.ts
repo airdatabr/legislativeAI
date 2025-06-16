@@ -89,23 +89,50 @@ export class DirectStorage implements IStorage {
   }
 
   async getUserConversations(userId: number) {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('id, title, query_type, created_at, updated_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    // Transform data to include date field expected by frontend
-    return (data || []).map(conv => ({
-      id: conv.id,
-      title: conv.title,
-      query_type: conv.query_type || 'internet',
-      date: conv.updated_at || conv.created_at,
-      created_at: conv.created_at,
-      updated_at: conv.updated_at
-    }));
+    try {
+      // Try to select with query_type first
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('id, title, created_at, updated_at, query_type')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        // If query_type column error, fallback to basic fields
+        if (error.code === '42703') {
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('conversations')
+            .select('id, title, created_at, updated_at')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+          
+          if (fallbackError) throw fallbackError;
+          
+          return (fallbackData || []).map(conv => ({
+            id: conv.id,
+            title: conv.title,
+            query_type: 'internet', // Default for existing conversations
+            date: conv.updated_at || conv.created_at,
+            created_at: conv.created_at,
+            updated_at: conv.updated_at
+          }));
+        }
+        throw error;
+      }
+      
+      // Transform data to include date field expected by frontend
+      return (data || []).map(conv => ({
+        id: conv.id,
+        title: conv.title,
+        query_type: conv.query_type || 'internet',
+        date: conv.updated_at || conv.created_at,
+        created_at: conv.created_at,
+        updated_at: conv.updated_at
+      }));
+    } catch (error) {
+      console.error('getUserConversations error:', error);
+      throw error;
+    }
   }
 
   async getConversationWithMessages(conversationId: number, userId: number) {
