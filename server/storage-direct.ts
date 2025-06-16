@@ -79,15 +79,18 @@ export class DirectStorage implements IStorage {
 
   async createConversation(insertConversation: any) {
     try {
-      // Use SQL function to bypass PostgREST cache issues with query_type
-      const { data, error } = await supabase.rpc('create_conversation_with_type', {
-        p_user_id: insertConversation.user_id,
-        p_title: insertConversation.title,
-        p_query_type: insertConversation.query_type || 'internet'
-      });
+      // Simple approach without query_type for now
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: insertConversation.user_id,
+          title: insertConversation.title
+        })
+        .select()
+        .single();
       
       if (error) throw error;
-      return data && data.length > 0 ? data[0] : null;
+      return data;
     } catch (error) {
       console.error('createConversation error:', error);
       throw error;
@@ -96,18 +99,20 @@ export class DirectStorage implements IStorage {
 
   async getUserConversations(userId: number) {
     try {
-      // Use SQL function to bypass PostgREST cache issues
-      const { data, error } = await supabase.rpc('get_user_conversations_with_type', {
-        p_user_id: userId
-      });
+      // Simple fallback approach - use basic fields and set default query_type
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('id, title, created_at, updated_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      // Transform data to include date field expected by frontend
+      // Transform data to include date field and default query_type for existing conversations
       return (data || []).map(conv => ({
         id: conv.id,
         title: conv.title,
-        query_type: conv.query_type || 'internet',
+        query_type: 'internet', // Default for existing conversations until we can read the actual field
         date: conv.updated_at || conv.created_at,
         created_at: conv.created_at,
         updated_at: conv.updated_at
