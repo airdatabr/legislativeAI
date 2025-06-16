@@ -81,7 +81,7 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
 
     setIsGenerating(true);
     sendMessageMutation.mutate({
-      question: message.trim(),
+      message: message.trim(),
       conversationId: conversationId || undefined,
       queryType: queryType
     });
