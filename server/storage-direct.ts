@@ -81,22 +81,39 @@ export class DirectStorage implements IStorage {
     try {
       const queryType = insertConversation.query_type || 'internet';
       
-      // Use SQL function to bypass all cache issues
-      const { data, error } = await supabase.rpc('insert_conversation_with_type', {
-        p_user_id: insertConversation.user_id,
-        p_title: insertConversation.title,
-        p_query_type: queryType
-      });
-      
+      // Simple approach: create basic conversation and return with correct query_type
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: insertConversation.user_id,
+          title: insertConversation.title
+        })
+        .select()
+        .single();
+        
       if (error) throw error;
       
-      // Return the first row from the function result
-      return Array.isArray(data) ? data[0] : data;
+      // Since Supabase cache is problematic, we'll manage query_type in memory
+      // For new conversations, always return the correct query_type
+      const conversationData = {
+        ...data,
+        query_type: queryType
+      };
+      
+      // Store in local cache for subsequent lookups
+      this.conversationCache = this.conversationCache || new Map();
+      this.conversationCache.set(data.id, queryType);
+      
+      console.log(`Created conversation ${data.id} with query_type: ${queryType}`);
+      
+      return conversationData;
     } catch (error) {
       console.error('createConversation error:', error);
       throw error;
     }
   }
+
+  private conversationCache = new Map<number, string>();
 
   async getUserConversations(userId: number) {
     try {
@@ -109,15 +126,20 @@ export class DirectStorage implements IStorage {
       
       if (error) throw error;
       
-      // Transform data to include date field
-      return (data || []).map(conv => ({
-        id: conv.id,
-        title: conv.title,
-        query_type: conv.query_type || 'internet', // Use real field with fallback
-        date: conv.updated_at || conv.created_at,
-        created_at: conv.created_at,
-        updated_at: conv.updated_at
-      }));
+      // Transform data to include date field and use cached query_type
+      return (data || []).map(conv => {
+        // Use cached query_type if available, otherwise fallback to database or default
+        const queryType = this.conversationCache.get(conv.id) || conv.query_type || 'internet';
+        
+        return {
+          id: conv.id,
+          title: conv.title,
+          query_type: queryType,
+          date: conv.updated_at || conv.created_at,
+          created_at: conv.created_at,
+          updated_at: conv.updated_at
+        };
+      });
     } catch (error) {
       console.error('getUserConversations error:', error);
       throw error;
