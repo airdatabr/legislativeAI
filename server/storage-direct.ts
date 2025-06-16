@@ -48,41 +48,20 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
-    // Create user with basic fields first
-    const { role_id, ...userDataWithoutRole } = insertUser;
-    
-    const { data, error } = await supabase
-      .from('users')
-      .insert(userDataWithoutRole)
-      .select('*')
-      .single();
+    // Use direct SQL to create user with role_id
+    const { data, error } = await supabase.rpc('create_user_complete', {
+      p_name: insertUser.name,
+      p_email: insertUser.email,
+      p_password: insertUser.password,
+      p_role_id: insertUser.role_id || 2
+    });
     
     if (error) throw error;
     
-    // Update role_id directly with SQL query if provided
-    if (role_id) {
-      const updateQuery = `UPDATE users SET role_id = ${role_id} WHERE id = ${data.id}`;
-      const { error: updateError } = await supabase.rpc('exec_sql', { query: updateQuery });
-      
-      if (!updateError) {
-        // Fetch updated user data
-        const { data: updatedData } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', data.id)
-          .single();
-        
-        return { 
-          ...updatedData, 
-          role: (role_id === 1) ? 'admin' : 'user' 
-        };
-      }
-    }
-    
+    const newUser = data[0];
     return { 
-      ...data, 
-      role_id: 2,
-      role: 'user' 
+      ...newUser, 
+      role: newUser.role_id === 1 ? 'admin' : 'user' 
     };
   }
 
