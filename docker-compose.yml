@@ -7,9 +7,6 @@ services:
       replicas: 1
       restart_policy:
         condition: any
-      update_config:
-        parallelism: 1
-        delay: 10s
     environment:
       - NODE_ENV=production
       - SESSION_SECRET=${SESSION_SECRET}
@@ -36,34 +33,45 @@ services:
       replicas: 1
       restart_policy:
         condition: any
-      placement:
-        constraints:
-          - node.role == manager  # Para garantir acesso aos volumes
     ports:
       - "80:80"
       - "443:443"
-    configs:
-      - source: nginx_config
-        target: /etc/nginx/nginx.conf
     volumes:
       - certbot_www:/var/www/certbot/:ro
       - certbot_conf:/etc/nginx/ssl/:ro
-    networks:
-      - app_network
-
-  certbot:
-    image: certbot/certbot:latest
-    deploy:
-      replicas: 0  # Inicialmente 0, escale para 1 quando precisar renovar
-      restart_policy:
-        condition: none
-      placement:
-        constraints:
-          - node.role == manager
-    volumes:
-      - certbot_www:/var/www/certbot/:rw
-      - certbot_conf:/etc/letsencrypt/:rw
-    command: certonly --webroot --webroot-path=/var/www/certbot --email seu-email@exemplo.com --agree-tos --no-eff-email -d legislative-ai.airdata.com.br
+    # Configuração inline do nginx usando command
+    command: |
+      sh -c "cat > /etc/nginx/nginx.conf << 'EOF'
+      events {
+          worker_connections 1024;
+      }
+      http {
+          include       /etc/nginx/mime.types;
+          default_type  application/octet-stream;
+          
+          upstream app {
+              server app:5000;
+          }
+          
+          server {
+              listen 80;
+              server_name legislative-ai.airdata.com.br;
+              
+              location /.well-known/acme-challenge/ {
+                  root /var/www/certbot;
+              }
+              
+              location / {
+                  proxy_pass http://app;
+                  proxy_set_header Host \$$host;
+                  proxy_set_header X-Real-IP \$$remote_addr;
+                  proxy_set_header X-Forwarded-For \$$proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto \$$scheme;
+              }
+          }
+      }
+      EOF
+      && nginx -g 'daemon off;'"
     networks:
       - app_network
 
@@ -79,7 +87,3 @@ networks:
   app_network:
     driver: overlay
     attachable: true
-
-configs:
-  nginx_config:
-    external: true  # Você precisa criar este config no Portainer primeiro
