@@ -48,22 +48,28 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
-    // Use the new SQL function to create user with role_id
-    const { data, error } = await supabase.rpc('insert_user_complete', {
-      p_name: insertUser.name,
-      p_email: insertUser.email,
-      p_password: insertUser.password,
-      p_role_id: insertUser.role_id || 2
-    });
+    // Create user using basic insert first
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .insert({
+        name: insertUser.name,
+        email: insertUser.email,
+        password: insertUser.password,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select('*')
+      .single();
     
-    if (error) throw error;
+    if (userError) throw userError;
     
-    // Parse JSON result from function
-    const userData = typeof data === 'string' ? JSON.parse(data) : data;
+    // Set default role_id to 2 (user) if not specified
+    const roleId = insertUser.role_id || 2;
     
     return { 
       ...userData, 
-      role: userData.role_id === 1 ? 'admin' : 'user' 
+      role_id: roleId,
+      role: roleId === 1 ? 'admin' : 'user' 
     };
   }
 
@@ -128,21 +134,21 @@ export class DirectStorage implements IStorage {
   }
 
   async getAllRoles() {
-    try {
-      // Try direct SQL query first
-      const result = await supabase.rpc('get_roles');
-      if (result.data) {
-        return result.data;
-      }
-    } catch (error) {
-      console.error('RPC error:', error);
+    const { data, error } = await supabase
+      .from('role')
+      .select('*')
+      .order('id');
+    
+    if (error) {
+      console.error('Error fetching roles:', error);
+      // Return default roles if database query fails
+      return [
+        { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
+        { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
+      ];
     }
     
-    // Fallback to static roles
-    return [
-      { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
-      { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
-    ];
+    return data;
   }
 
   async getRoleById(id: number) {
@@ -159,15 +165,36 @@ export class DirectStorage implements IStorage {
   async getAllUsers() {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select(`
+        *,
+        role!inner(name, description)
+      `)
       .order('created_at', { ascending: false });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching users with roles:', error);
+      // Fallback: get users and roles separately
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (userError) throw userError;
+      
+      const roles = await this.getAllRoles();
+      
+      return (userData || []).map(user => {
+        const userRole = roles.find(r => r.id === user.role_id);
+        return {
+          ...user,
+          role: userRole?.name || (user.role_id === 1 ? 'admin' : 'user')
+        };
+      });
+    }
     
-    // Add role information based on role_id
     return (data || []).map(user => ({
       ...user,
-      role: user.role_id === 1 ? 'admin' : 'user'
+      role: user.role?.name || (user.role_id === 1 ? 'admin' : 'user')
     }));
   }
 
