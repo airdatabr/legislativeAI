@@ -270,6 +270,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/admin/users/:id', authenticateToken, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Prevent deleting the main admin user
+      if (userId === 1) {
+        return res.status(400).json({ message: "Não é possível excluir o administrador principal" });
+      }
+      
+      // Check if user exists
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      await storage.deleteUser(userId);
+      res.json({ message: "Usuário excluído com sucesso" });
+    } catch (error) {
+      console.error("User deletion error:", error);
+      res.status(500).json({ message: "Erro ao excluir usuário" });
+    }
+  });
+
   app.get('/api/admin/stats', authenticateToken, requireAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getUsageStats();

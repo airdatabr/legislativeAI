@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Users, UserPlus, BarChart3, MessageSquare, Calendar } from "lucide-react";
+import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -131,6 +131,54 @@ export default function AdminPage() {
     createUserMutation.mutate(data);
   };
 
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao excluir usuário');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Usuário Excluído",
+        description: "O usuário foi excluído com sucesso.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao Excluir Usuário",
+        description: error.message || "Ocorreu um erro ao excluir o usuário.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditUser = (user: any) => {
+    // Para implementar em versão futura - modal de edição
+    toast({
+      title: "Funcionalidade em Desenvolvimento",
+      description: "A edição de usuários será implementada em breve.",
+    });
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    if (window.confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
+      deleteUserMutation.mutate(userId);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -194,23 +242,49 @@ export default function AdminPage() {
                       <TableHead>Email</TableHead>
                       <TableHead>Função</TableHead>
                       <TableHead>Data de Criação</TableHead>
+                      <TableHead>Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user: any) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.name}</TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.role === 'admin' ? 'destructive' : 'default'}>
-                            {user.role === 'admin' ? 'Administrador' : 'Usuário'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {users.map((user: any) => {
+                      // Encontrar o role correspondente para exibir o nome correto
+                      const userRole = Array.isArray(roles) ? roles.find((role: any) => role.id === user.role_id) : null;
+                      const roleName = userRole?.name || user.role || 'Usuário';
+                      
+                      return (
+                        <TableRow key={user.id}>
+                          <TableCell className="font-medium">{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>
+                            <Badge variant={user.role_id === 1 ? 'destructive' : 'default'}>
+                              {roleName}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditUser(user)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id)}
+                                disabled={user.id === 1} // Não permitir deletar o admin principal
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}

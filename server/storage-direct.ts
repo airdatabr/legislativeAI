@@ -6,6 +6,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<any>;
   createUser(insertUser: any): Promise<any>;
   getAllUsers(): Promise<any[]>;
+  deleteUser(id: number): Promise<void>;
   
   // Role operations
   getAllRoles(): Promise<any[]>;
@@ -272,6 +273,50 @@ export class DirectStorage implements IStorage {
       total_messages: totalMessages || 0,
       most_active_users: mostActiveUsers
     };
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    // First, delete related messages for this user's conversations
+    const { data: conversations } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('user_id', id);
+
+    if (conversations && conversations.length > 0) {
+      const conversationIds = conversations.map(conv => conv.id);
+      
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .in('conversation_id', conversationIds);
+
+      if (messagesError) {
+        console.error("Error deleting user messages:", messagesError);
+        throw new Error("Erro ao excluir mensagens do usuário");
+      }
+    }
+
+    // Then delete conversations
+    const { error: conversationsError } = await supabase
+      .from('conversations')
+      .delete()
+      .eq('user_id', id);
+
+    if (conversationsError) {
+      console.error("Error deleting user conversations:", conversationsError);
+      throw new Error("Erro ao excluir conversas do usuário");
+    }
+
+    // Finally delete the user
+    const { error: userError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (userError) {
+      console.error("Error deleting user:", userError);
+      throw new Error("Erro ao excluir usuário");
+    }
   }
 }
 
