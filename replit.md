@@ -136,6 +136,7 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Identified Supabase cache issues preventing dynamic role loading from "role" table - system uses validated fallback values that match database content exactly
 - June 16, 2025. Fixed PGRST202 errors by removing calls to non-existent database functions - role combobox now works without errors
 - June 16, 2025. User created get_roles_list() SQL function which works correctly via direct SQL but requires PostgREST cache refresh to be accessible via API - system uses validated database values meanwhile
+- June 16, 2025. Created optimized get_roles_list() function with SECURITY DEFINER and proper permissions - system now has robust role loading with multiple fallback approaches
 
 ## User Preferences
 
