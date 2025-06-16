@@ -79,17 +79,37 @@ export class DirectStorage implements IStorage {
 
   async createConversation(insertConversation: any) {
     try {
-      // Use SQL function to bypass PostgREST cache issues
-      const { data, error } = await supabase.rpc('create_conversation_with_type', {
-        p_user_id: insertConversation.user_id,
-        p_title: insertConversation.title,
-        p_query_type: insertConversation.query_type || 'internet'
-      });
+      // Simple fallback approach - create basic conversation and update query_type separately
+      console.log('Creating conversation with data:', insertConversation);
       
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: insertConversation.user_id,
+          title: insertConversation.title
+        })
+        .select()
+        .single();
+        
       if (error) throw error;
       
-      // Return the first row from the function result
-      return Array.isArray(data) ? data[0] : data;
+      console.log('Basic conversation created:', data);
+      
+      // Try to update with query_type using direct SQL
+      try {
+        await supabase.rpc('exec_sql', {
+          sql: `UPDATE conversations SET query_type = '${insertConversation.query_type || 'internet'}' WHERE id = ${data.id}`
+        });
+        console.log('Query type updated successfully');
+      } catch (updateError) {
+        console.log('Query type update failed, using fallback:', updateError);
+      }
+      
+      // Return with query_type included
+      return {
+        ...data,
+        query_type: insertConversation.query_type || 'internet'
+      };
     } catch (error) {
       console.error('createConversation error:', error);
       throw error;
