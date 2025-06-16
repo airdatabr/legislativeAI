@@ -6,22 +6,13 @@ import * as schema from "@shared/schema";
 let connectionString: string;
 
 if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY) {
-  // Handle custom Supabase domain
-  if (process.env.SUPABASE_URL.includes('airdata.com.br')) {
-    // Custom domain - extract project reference from SUPABASE_KEY or use direct connection
-    console.log(`[DB] Using custom Supabase domain: airdata.com.br`);
-    // For custom domains, we typically need the direct DATABASE_URL
-    if (process.env.DATABASE_URL) {
-      connectionString = process.env.DATABASE_URL;
-    } else {
-      throw new Error("DATABASE_URL required for custom Supabase domain");
-    }
+  console.log(`[DB] Detected Supabase credentials, using direct DATABASE_URL for custom domain`);
+  // For custom domains like airdata.com.br, use DATABASE_URL directly
+  if (process.env.DATABASE_URL) {
+    connectionString = process.env.DATABASE_URL;
+    console.log(`[DB] Using DATABASE_URL for custom Supabase domain`);
   } else {
-    // Standard Supabase domain
-    const supabaseUrl = new URL(process.env.SUPABASE_URL);
-    const projectRef = supabaseUrl.hostname.split('.')[0];
-    connectionString = `postgresql://postgres.${projectRef}:${process.env.SUPABASE_KEY}@aws-0-us-east-1.pooler.supabase.com:6543/postgres`;
-    console.log(`[DB] Connecting to Supabase project: ${projectRef}`);
+    throw new Error("DATABASE_URL required for custom Supabase domain configuration");
   }
 } else if (process.env.DATABASE_URL) {
   connectionString = process.env.DATABASE_URL;
