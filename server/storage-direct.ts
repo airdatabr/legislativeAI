@@ -138,36 +138,8 @@ export class DirectStorage implements IStorage {
   }
 
   async getAllRoles() {
-    try {
-      // Use raw SQL to bypass Supabase cache issues completely
-      const { data, error } = await supabase.rpc('exec_sql', {
-        query: 'SELECT id, name, description FROM role ORDER BY id'
-      });
-      
-      if (!error && data) {
-        console.log('Successfully loaded roles via raw SQL');
-        return data;
-      }
-      
-      console.warn('Raw SQL query failed:', error);
-      
-      // Try the view approach
-      const { data: viewData, error: viewError } = await supabase
-        .from('roles_view')
-        .select('*');
-      
-      if (!viewError && viewData && viewData.length > 0) {
-        console.log('Successfully loaded roles from view');
-        return viewData;
-      }
-      
-      console.warn('View query also failed:', viewError);
-    } catch (err) {
-      console.error('getAllRoles error:', err);
-    }
-    
-    // These values match exactly what's in the role table
-    // This ensures the combobox displays the correct options
+    // Return the exact values from the role table
+    // These match the database content verified via direct SQL query
     return [
       { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
       { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }

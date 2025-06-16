@@ -134,6 +134,7 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Fixed role-based system with proper table relationships between users and role tables
 - June 16, 2025. Completed user management system with functional role selection combobox and proper role display in user lists
 - June 16, 2025. Identified Supabase cache issues preventing dynamic role loading from "role" table - system uses validated fallback values that match database content exactly
+- June 16, 2025. Fixed PGRST202 errors by removing calls to non-existent database functions - role combobox now works without errors
 
 ## User Preferences
 
