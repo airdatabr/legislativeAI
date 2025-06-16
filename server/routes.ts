@@ -52,7 +52,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role || 'user'
       });
     } catch (error) {
       console.error("Get user error:", error);
@@ -86,7 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user: {
           id: user.id,
           name: user.name,
-          email: user.email
+          email: user.email,
+          role: user.role || 'user'
         }
       });
     } catch (error) {
