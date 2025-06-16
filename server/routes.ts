@@ -33,11 +33,30 @@ async function authenticateToken(req: any, res: any, next: any) {
 }
 
 // Admin middleware
-function requireAdmin(req: any, res: any, next: any) {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem acessar esta funcionalidade.' });
+async function requireAdmin(req: any, res: any, next: any) {
+  try {
+    if (!req.user) {
+      return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem acessar esta funcionalidade.' });
+    }
+    
+    // Get user with role information
+    const userWithRole = await storage.getUser(req.user.id);
+    if (!userWithRole) {
+      return res.status(403).json({ message: 'Usuário não encontrado.' });
+    }
+    
+    // For backward compatibility with existing system, check if user is admin by email
+    const isAdmin = userWithRole.email === 'admin@cabedelo.pb.gov.br';
+    
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem acessar esta funcionalidade.' });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Admin check error:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor.' });
   }
-  next();
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {

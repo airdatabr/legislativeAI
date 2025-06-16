@@ -21,7 +21,7 @@ const createUserSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-  role: z.enum(["admin", "user"]).default("user"),
+  role_id: z.number().int().positive("Função é obrigatória"),
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
@@ -37,7 +37,7 @@ export default function AdminPage() {
       name: "",
       email: "",
       password: "",
-      role: "user",
+      role_id: 0,
     },
   });
 
@@ -56,6 +56,18 @@ export default function AdminPage() {
   }, [user, authLoading, toast]);
 
   // Queries
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['/api/admin/roles'],
+    enabled: user?.role === 'admin',
+    queryFn: async () => {
+      const response = await fetch('/api/admin/roles', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+      });
+      if (!response.ok) throw new Error('Failed to fetch roles');
+      return response.json();
+    }
+  });
+
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['/api/admin/users'],
     enabled: user?.role === 'admin',
@@ -276,19 +288,22 @@ export default function AdminPage() {
 
                   <FormField
                     control={form.control}
-                    name="role"
+                    name="role_id"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Função</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione a função do usuário" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="user">Usuário</SelectItem>
-                            <SelectItem value="admin">Administrador</SelectItem>
+                            {roles.map((role: any) => (
+                              <SelectItem key={role.id} value={role.id.toString()}>
+                                {role.name === 'admin' ? 'Administrador' : 'Usuário'}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
