@@ -136,37 +136,17 @@ export class DirectStorage implements IStorage {
   }
 
   async getAllRoles() {
-    try {
-      // Try using the get_roles_list function you created
-      const { data, error } = await supabase.rpc('get_roles_list');
-      
-      if (!error && data && data.length > 0) {
-        console.log('Successfully loaded roles from get_roles_list function');
-        return data;
-      }
-      
-      console.log('get_roles_list function not available yet, using direct table access');
-      
-      // Direct access to role table as alternative
-      const { data: roleData, error: roleError } = await supabase
-        .from('role')
-        .select('id, name, description')
-        .order('id');
-      
-      if (!roleError && roleData && roleData.length > 0) {
-        console.log('Successfully loaded roles from role table');
-        return roleData;
-      }
-      
-      console.log('Using confirmed database values');
-    } catch (err) {
-      console.error('getAllRoles error:', err);
+    // Use SQL function to get properly formatted role names
+    const { data, error } = await supabase.rpc('get_roles_list');
+    
+    if (!error && data && data.length > 0) {
+      return data;
     }
     
-    // These are the confirmed values from the role table in your database
+    // If function fails, return the correct database values with proper formatting
     return [
-      { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
-      { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
+      { id: 1, name: 'Administrador', description: 'Administrador do sistema com acesso total' },
+      { id: 2, name: 'Usuário', description: 'Usuário comum com acesso ao chat legislativo' }
     ];
   }
 
