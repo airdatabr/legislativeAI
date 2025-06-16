@@ -870,7 +870,7 @@ export default function AdminPage() {
                           type="text"
                           value={envVars['INTERNAL_LAWS_API_URL'] || ''}
                           onChange={(e) => handleEnvUpdate('INTERNAL_LAWS_API_URL', e.target.value)}
-                          placeholder="http://localhost:8000/chat"
+                          placeholder="https://api.openai.com/v1/chat/completions (para teste)"
                         />
                         <p className="text-sm text-gray-500">
                           URL do endpoint da API interna de legislação municipal

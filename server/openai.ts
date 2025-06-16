@@ -65,64 +65,75 @@ export async function generateConversationTitle(firstMessage: string): Promise<s
 
 export async function generateLawsResponse(question: string): Promise<string> {
   try {
-    // Chamada para sua API interna da base de leis
-    const response = await fetch(process.env.INTERNAL_LAWS_API_URL || 'http://localhost:8000/chat', {
+    // Para teste, usa a URL do OpenAI se não tiver configuração específica
+    const apiUrl = process.env.INTERNAL_LAWS_API_URL || 'https://api.openai.com/v1/chat/completions';
+    const apiKey = process.env.INTERNAL_LAWS_API_KEY || process.env.OPENAI_API_KEY;
+    
+    // Estrutura o request igual ao ChatGPT/OpenAI
+    const requestBody = {
+      model: "gpt-4o", // Modelo padrão
+      messages: [
+        {
+          role: "system",
+          content: "Você é um assistente legislativo da Câmara Municipal de Cabedelo, Paraíba. Especialize-se em legislação municipal brasileira, fornecendo respostas sobre leis, decretos, portarias e regulamentações municipais. Sempre cite fontes legais específicas quando possível, incluindo números de artigos e datas de publicação."
+        },
+        {
+          role: "user", 
+          content: question
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 1500,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0
+    };
+
+    // Headers idênticos ao padrão OpenAI
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+
+    // Adiciona autorização se a chave estiver disponível
+    if (apiKey && apiKey.trim() !== '') {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+
+    console.log(`[Laws API] Calling ${apiUrl}`);
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.INTERNAL_LAWS_API_KEY || ''}`
-      },
-      body: JSON.stringify({
-        message: question,
-        include_sources: true // Incluir fontes para citações específicas
-      })
+      headers,
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
-      throw new Error(`API da base de leis retornou status: ${response.status}`);
+      console.error(`[Laws API] HTTP error! status: ${response.status}`);
+      throw new Error(`API de Leis retornou erro: ${response.status}`);
     }
 
     const data = await response.json();
     
-    // Assumindo que sua API retorna o conteúdo em um campo específico
-    // Você pode ajustar conforme a estrutura real da resposta
-    return data.response || data.message || data.answer || "Não foi possível processar sua consulta sobre a base de leis municipais.";
+    // Processa resposta no formato OpenAI
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      return data.choices[0].message.content || "Não foi possível obter resposta da base de leis.";
+    }
+    
+    // Fallback para outros formatos de resposta
+    if (data.response) {
+      return data.response;
+    }
+    
+    if (data.message) {
+      return data.message;
+    }
+
+    console.warn("[Laws API] Formato de resposta não reconhecido:", data);
+    return "Resposta recebida da API de leis em formato não esperado.";
     
   } catch (error) {
-    console.error("Erro ao consultar base de leis interna:", error);
-    
-    // Fallback para OpenAI se a API interna falhar
-    console.log("Usando fallback para OpenAI...");
-    const fallbackResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `Você é um assistente legislativo especializado na base de leis municipais do Brasil, especificamente da Câmara Municipal de Cabedelo, Paraíba.
-
-IMPORTANTE: Você deve responder EXCLUSIVAMENTE com base em leis, decretos, portarias e regulamentações municipais.
-
-Suas respostas devem:
-- Citar especificamente leis municipais, decretos ou portarias
-- Incluir números de artigos, parágrafos e incisos quando relevante
-- Indicar datas de publicação quando possível
-- Se não encontrar informação específica na base legal municipal, dizer claramente que não há regulamentação municipal específica sobre o assunto
-
-Formato da resposta:
-1. Resposta direta à pergunta
-2. Base legal (lei/decreto/portaria com número e data)
-3. Artigos específicos citados
-4. Observações adicionais se relevantes`
-        },
-        {
-          role: "user",
-          content: question
-        }
-      ],
-      max_tokens: 800,
-      temperature: 0.3
-    });
-
-    return fallbackResponse.choices[0].message.content || "Erro ao consultar base de leis municipais.";
+    console.error("Error calling laws API:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    throw new Error(`Falha ao consultar a base de dados de leis: ${errorMessage}`);
   }
 }
