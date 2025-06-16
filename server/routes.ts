@@ -346,6 +346,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const envSettings = {
         OPENAI_API_KEY: process.env.OPENAI_API_KEY ? '***' + process.env.OPENAI_API_KEY.slice(-4) : '',
         DATABASE_URL: process.env.DATABASE_URL ? '***' + process.env.DATABASE_URL.slice(-10) : '',
+        SUPABASE_URL: process.env.SUPABASE_URL || '',
+        SUPABASE_KEY: process.env.SUPABASE_KEY ? '***' + process.env.SUPABASE_KEY.slice(-4) : '',
         JWT_SECRET: process.env.JWT_SECRET ? '***' + process.env.JWT_SECRET.slice(-4) : '',
         INTERNAL_LAWS_API_URL: process.env.INTERNAL_LAWS_API_URL || '',
         INTERNAL_LAWS_API_KEY: process.env.INTERNAL_LAWS_API_KEY ? '***' + process.env.INTERNAL_LAWS_API_KEY.slice(-4) : ''

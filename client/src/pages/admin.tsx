@@ -670,14 +670,19 @@ export default function AdminPage() {
                   <div className="text-lg">Carregando configurações...</div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {/* OpenAI Configuration */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Key className="h-4 w-4" />
-                      Configuração da OpenAI
-                    </h3>
-                    <div className="grid gap-4">
+                <div className="space-y-8">
+                  {/* OpenAI Configuration Card */}
+                  <Card className="border-blue-200 dark:border-blue-800">
+                    <CardHeader className="bg-blue-50 dark:bg-blue-950 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                        <Key className="h-5 w-5" />
+                        OpenAI - Inteligência Artificial
+                      </CardTitle>
+                      <CardDescription className="text-blue-600 dark:text-blue-300">
+                        Configurações para funcionalidades de IA e processamento de linguagem natural
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 p-6">
                       <div className="space-y-2">
                         <Label htmlFor="openai-key">Chave da API OpenAI</Label>
                         <div className="flex gap-2">
@@ -703,16 +708,24 @@ export default function AdminPage() {
                           </Button>
                         </div>
                         <p className="text-sm text-gray-500">
-                          Chave necessária para as funcionalidades de IA do sistema
+                          Chave necessária para as funcionalidades de IA do assistente legislativo
                         </p>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
-                  {/* Database Configuration */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Configuração do Banco de Dados</h3>
-                    <div className="space-y-4">
+                  {/* Supabase Configuration Card */}
+                  <Card className="border-green-200 dark:border-green-800">
+                    <CardHeader className="bg-green-50 dark:bg-green-950 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                        <Settings className="h-5 w-5" />
+                        Supabase - Banco de Dados
+                      </CardTitle>
+                      <CardDescription className="text-green-600 dark:text-green-300">
+                        Configurações de conexão com o banco de dados PostgreSQL
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 p-6">
                       <div className="space-y-2">
                         <Label htmlFor="database-url">URL do Banco de Dados</Label>
                         <div className="flex gap-2">
@@ -721,7 +734,7 @@ export default function AdminPage() {
                             type={showPasswords['DATABASE_URL'] ? 'text' : 'password'}
                             value={envVars['DATABASE_URL'] || ''}
                             onChange={(e) => handleEnvUpdate('DATABASE_URL', e.target.value)}
-                            placeholder="postgresql://..."
+                            placeholder="postgresql://postgres.projectref:[password]@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
                             className="flex-1"
                           />
                           <Button
@@ -738,16 +751,65 @@ export default function AdminPage() {
                           </Button>
                         </div>
                         <p className="text-sm text-gray-500">
-                          String de conexão com o banco de dados PostgreSQL
+                          String de conexão obtida no painel do Supabase (Connection pooler)
                         </p>
                       </div>
-                    </div>
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="supabase-url">URL do Projeto Supabase</Label>
+                        <Input
+                          id="supabase-url"
+                          type="text"
+                          value={envVars['SUPABASE_URL'] || ''}
+                          onChange={(e) => handleEnvUpdate('SUPABASE_URL', e.target.value)}
+                          placeholder="https://projectref.supabase.co"
+                        />
+                        <p className="text-sm text-gray-500">
+                          URL base do seu projeto Supabase
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="supabase-key">Chave Anônima do Supabase</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="supabase-key"
+                            type={showPasswords['SUPABASE_KEY'] ? 'text' : 'password'}
+                            value={envVars['SUPABASE_KEY'] || ''}
+                            onChange={(e) => handleEnvUpdate('SUPABASE_KEY', e.target.value)}
+                            placeholder="eyJ..."
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => togglePasswordVisibility('SUPABASE_KEY')}
+                          >
+                            {showPasswords['SUPABASE_KEY'] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          Chave anônima pública para acesso ao Supabase
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                  {/* Authentication Configuration */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Configuração de Autenticação</h3>
-                    <div className="space-y-4">
+                  {/* Authentication Configuration Card */}
+                  <Card className="border-purple-200 dark:border-purple-800">
+                    <CardHeader className="bg-purple-50 dark:bg-purple-950 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+                        <Key className="h-5 w-5" />
+                        Autenticação e Segurança
+                      </CardTitle>
+                      <CardDescription className="text-purple-600 dark:text-purple-300">
+                        Configurações de segurança e autenticação JWT
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 p-6">
                       <div className="space-y-2">
                         <Label htmlFor="jwt-secret">Chave Secreta JWT</Label>
                         <div className="flex gap-2">
@@ -756,7 +818,7 @@ export default function AdminPage() {
                             type={showPasswords['JWT_SECRET'] ? 'text' : 'password'}
                             value={envVars['JWT_SECRET'] || ''}
                             onChange={(e) => handleEnvUpdate('JWT_SECRET', e.target.value)}
-                            placeholder="Digite uma chave secreta segura..."
+                            placeholder="Digite uma chave secreta segura com pelo menos 32 caracteres..."
                             className="flex-1"
                           />
                           <Button
@@ -773,16 +835,24 @@ export default function AdminPage() {
                           </Button>
                         </div>
                         <p className="text-sm text-gray-500">
-                          Chave usada para assinar tokens JWT de autenticação
+                          Chave usada para assinar tokens JWT de autenticação (mantenha secreta)
                         </p>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
-                  {/* Laws API Configuration */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">API de Legislação Municipal</h3>
-                    <div className="space-y-4">
+                  {/* Laws API Configuration Card */}
+                  <Card className="border-orange-200 dark:border-orange-800">
+                    <CardHeader className="bg-orange-50 dark:bg-orange-950 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
+                        <MessageSquare className="h-5 w-5" />
+                        API de Legislação Municipal
+                      </CardTitle>
+                      <CardDescription className="text-orange-600 dark:text-orange-300">
+                        Configurações para integração com a base de dados de leis municipais
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 p-6">
                       <div className="space-y-2">
                         <Label htmlFor="laws-api-url">URL da API de Leis</Label>
                         <Input
@@ -821,11 +891,11 @@ export default function AdminPage() {
                           </Button>
                         </div>
                         <p className="text-sm text-gray-500">
-                          Chave de autenticação para acessar a API de legislação
+                          Chave de autenticação para acessar a API de legislação (opcional)
                         </p>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
 
                   {/* Save Button */}
                   <div className="flex justify-end pt-6 border-t">
