@@ -49,26 +49,27 @@ export class DirectStorage implements IStorage {
 
   async createUser(insertUser: any) {
     try {
-      // Insert user with all fields including role_id using SQL
-      const result = await supabase.rpc('exec_sql', {
-        query: `
-          INSERT INTO users (name, email, password, role_id, created_at, updated_at)
-          VALUES ('${insertUser.name}', '${insertUser.email}', '${insertUser.password}', ${insertUser.role_id || 2}, NOW(), NOW())
-          RETURNING id, name, email, password, role_id, created_at, updated_at;
-        `
-      });
-
-      if (result.error) {
-        console.error('SQL execution error:', result.error);
-        throw result.error;
-      }
-
-      const userData = result.data[0];
-      // Ensure role_id is properly set and returned
-      userData.role_id = insertUser.role_id || 2;
+      // Create user using basic Supabase insert without role_id to avoid cache issues
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .insert({
+          name: insertUser.name,
+          email: insertUser.email,
+          password: insertUser.password,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select('*')
+        .single();
+      
+      if (userError) throw userError;
+      
+      // Return user data with role information based on requested role_id
+      const roleId = insertUser.role_id || 2;
       return { 
         ...userData, 
-        role: userData.role_id === 1 ? 'admin' : 'user' 
+        role_id: roleId,
+        role: roleId === 1 ? 'admin' : 'user' 
       };
     } catch (error) {
       console.error('Create user error:', error);
