@@ -37,7 +37,7 @@ export default function AdminPage() {
       name: "",
       email: "",
       password: "",
-      role_id: 0,
+      role_id: 2, // Default to 'user' role
     },
   });
 
@@ -55,29 +55,15 @@ export default function AdminPage() {
     }
   }, [user, authLoading, toast]);
 
-  // Queries
-  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+  // Queries with proper typing
+  const { data: roles = [], isLoading: rolesLoading } = useQuery<any[]>({
     queryKey: ['/api/admin/roles'],
     enabled: user?.role === 'admin',
-    queryFn: async () => {
-      const response = await fetch('/api/admin/roles', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch roles');
-      return response.json();
-    }
   });
 
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
     queryKey: ['/api/admin/users'],
     enabled: user?.role === 'admin',
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users', {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
-      });
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    }
   });
 
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -299,11 +285,20 @@ export default function AdminPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {roles.map((role: any) => (
-                              <SelectItem key={role.id} value={role.id.toString()}>
-                                {role.name === 'admin' ? 'Administrador' : 'Usuário'}
-                              </SelectItem>
-                            ))}
+                            {rolesLoading ? (
+                              <SelectItem value="" disabled>Carregando...</SelectItem>
+                            ) : roles && Array.isArray(roles) && roles.length > 0 ? (
+                              roles.map((role: any) => (
+                                <SelectItem key={role.id} value={role.id.toString()}>
+                                  {role.name === 'admin' ? 'Administrador' : 'Usuário'}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <>
+                                <SelectItem value="1">Administrador</SelectItem>
+                                <SelectItem value="2">Usuário</SelectItem>
+                              </>
+                            )}
                           </SelectContent>
                         </Select>
                         <FormMessage />
