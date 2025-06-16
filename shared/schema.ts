@@ -3,12 +3,19 @@ import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const roles = pgTable("role", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
-  role: text("role").notNull().default("user"), // 'admin' or 'user'
+  role_id: integer("role_id").notNull().references(() => roles.id),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });
@@ -30,7 +37,15 @@ export const messages = pgTable("messages", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const rolesRelations = relations(roles, ({ many }) => ({
+  users: many(users),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  role: one(roles, {
+    fields: [users.role_id],
+    references: [roles.id],
+  }),
   conversations: many(conversations),
 }));
 
@@ -50,10 +65,15 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 }));
 
 // Schemas
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  created_at: true,
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
-  createdAt: true,
-  updatedAt: true,
+  created_at: true,
+  updated_at: true,
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).omit({
@@ -82,10 +102,12 @@ export const createUserSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
-  role: z.enum(["admin", "user"]).default("user"),
+  role_id: z.number().int().positive("Função é obrigatória"),
 });
 
 // Types
+export type Role = typeof roles.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Conversation = typeof conversations.$inferSelect;
