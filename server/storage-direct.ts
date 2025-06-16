@@ -139,26 +139,25 @@ export class DirectStorage implements IStorage {
 
   async getAllRoles() {
     try {
-      // Query the role table directly
-      const { data, error } = await supabase
-        .from('role')
-        .select('*')
-        .order('id');
+      // Use raw SQL to bypass Supabase cache issues completely
+      const { data, error } = await supabase.rpc('exec_sql', {
+        query: 'SELECT id, name, description FROM role ORDER BY id'
+      });
       
-      if (!error && data && data.length > 0) {
-        console.log('Successfully loaded roles from role table:', data);
+      if (!error && data) {
+        console.log('Successfully loaded roles via raw SQL');
         return data;
       }
       
-      console.warn('Direct role table query failed:', error);
+      console.warn('Raw SQL query failed:', error);
       
-      // Try using the view as fallback
+      // Try the view approach
       const { data: viewData, error: viewError } = await supabase
         .from('roles_view')
         .select('*');
       
       if (!viewError && viewData && viewData.length > 0) {
-        console.log('Successfully loaded roles from view:', viewData);
+        console.log('Successfully loaded roles from view');
         return viewData;
       }
       
@@ -167,7 +166,8 @@ export class DirectStorage implements IStorage {
       console.error('getAllRoles error:', err);
     }
     
-    // Return the actual database values - these match the role table content
+    // These values match exactly what's in the role table
+    // This ensures the combobox displays the correct options
     return [
       { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
       { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
