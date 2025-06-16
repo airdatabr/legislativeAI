@@ -149,6 +149,9 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Completed comprehensive user management interface with full CRUD operations: create, read, update, delete with role-based display and administrative controls - all functionality tested and working
 - June 16, 2025. Fixed "Invalid Date" issue in conversation history - implemented robust date handling with proper field mapping from database and improved error handling in frontend formatting
 - June 16, 2025. Fixed "Invalid Date" issue in message timestamps - corrected field mapping from created_at to timestamp and added validation in formatTimestamp function to handle invalid dates gracefully
+- June 16, 2025. Successfully implemented visual query type indicators with colored circles - blue circles for Internet queries and yellow circles for Laws Database queries in conversation history
+- June 16, 2025. Added query_type field to conversations table and implemented SQL functions to bypass PostgREST cache issues during field recognition
+- June 16, 2025. Completed dual query system visualization - users can now visually distinguish between Internet (GPT) and Laws Database queries in the sidebar conversation history
 
 ## User Preferences
 
