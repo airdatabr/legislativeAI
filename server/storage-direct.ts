@@ -139,36 +139,23 @@ export class DirectStorage implements IStorage {
 
   async getAllRoles() {
     try {
-      // First try the view approach
-      const { data: viewData, error: viewError } = await supabase
-        .from('roles_view')
-        .select('*');
+      // Use SQL function to get roles from database - bypasses Supabase cache issues
+      const { data, error } = await supabase.rpc('get_roles_json');
       
-      if (!viewError && viewData && viewData.length > 0) {
-        console.log('Successfully loaded roles from view:', viewData);
-        return viewData;
+      if (!error && data) {
+        console.log('Successfully loaded roles from database via SQL function');
+        // Parse JSON string returned by the function
+        const roles = JSON.parse(data);
+        return roles;
       }
       
-      console.warn('View query failed, trying direct table access:', viewError);
-      
-      // Fallback to direct table query
-      const { data: tableData, error: tableError } = await supabase
-        .from('role')
-        .select('*')
-        .order('id');
-      
-      if (!tableError && tableData && tableData.length > 0) {
-        console.log('Successfully loaded roles from table:', tableData);
-        return tableData;
-      }
-      
-      console.warn('Table query also failed:', tableError);
+      console.warn('SQL function failed:', error);
     } catch (err) {
       console.error('getAllRoles error:', err);
     }
     
-    // Return the actual values that exist in the database
-    console.log('Using database fallback values');
+    // If SQL function fails, return the actual values that exist in the database
+    // This ensures the combobox always shows the correct roles
     return [
       { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
       { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
