@@ -49,8 +49,6 @@ export class DirectStorage implements IStorage {
 
   async createUser(insertUser: any) {
     try {
-      console.log('Storage createUser called with:', insertUser);
-      
       // Use SQL function to bypass PostgREST cache issues
       const { data: userData, error: userError } = await supabase.rpc('create_user_with_role', {
         p_name: insertUser.name,
@@ -60,11 +58,8 @@ export class DirectStorage implements IStorage {
       });
       
       if (userError) {
-        console.error('Supabase RPC error:', userError);
         throw userError;
       }
-      
-      console.log('User created successfully via RPC:', userData);
       
       // Return the first row from the function result
       const user = Array.isArray(userData) ? userData[0] : userData;
@@ -300,5 +295,4 @@ export class DirectStorage implements IStorage {
   }
 }
 
-console.log('Loading storage-direct.ts');
 export const storage = new DirectStorage();
