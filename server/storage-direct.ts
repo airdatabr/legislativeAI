@@ -79,24 +79,17 @@ export class DirectStorage implements IStorage {
 
   async createConversation(insertConversation: any) {
     try {
-      // Include query_type in the insertion
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: insertConversation.user_id,
-          title: insertConversation.title,
-          query_type: insertConversation.query_type || 'internet'
-        })
-        .select()
-        .single();
+      // Use SQL function to bypass PostgREST cache issues
+      const { data, error } = await supabase.rpc('create_conversation_with_type', {
+        p_user_id: insertConversation.user_id,
+        p_title: insertConversation.title,
+        p_query_type: insertConversation.query_type || 'internet'
+      });
       
       if (error) throw error;
       
-      // Add query_type to the returned data (virtual field until cache refreshes)
-      return { 
-        ...data, 
-        query_type: insertConversation.query_type || 'internet' 
-      };
+      // Return the first row from the function result
+      return Array.isArray(data) ? data[0] : data;
     } catch (error) {
       console.error('createConversation error:', error);
       throw error;
