@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role || 'user'
+        role: user.role
       });
     } catch (error) {
       console.error("Get user error:", error);
@@ -88,7 +88,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role || 'user'
+          role: user.role || (user.email === 'admin@cabedelo.pb.gov.br' ? 'admin' : 'user')
         }
       });
     } catch (error) {
