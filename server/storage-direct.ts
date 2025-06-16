@@ -139,24 +139,35 @@ export class DirectStorage implements IStorage {
 
   async getAllRoles() {
     try {
-      // Use direct query to the correct table name "roles"
+      // Query the role table directly
       const { data, error } = await supabase
-        .from('roles')
-        .select('id, name, description')
+        .from('role')
+        .select('*')
         .order('id');
       
       if (!error && data && data.length > 0) {
-        console.log('Successfully loaded roles from roles table');
+        console.log('Successfully loaded roles from role table:', data);
         return data;
       }
       
-      console.warn('Query to roles table failed:', error);
+      console.warn('Direct role table query failed:', error);
+      
+      // Try using the view as fallback
+      const { data: viewData, error: viewError } = await supabase
+        .from('roles_view')
+        .select('*');
+      
+      if (!viewError && viewData && viewData.length > 0) {
+        console.log('Successfully loaded roles from view:', viewData);
+        return viewData;
+      }
+      
+      console.warn('View query also failed:', viewError);
     } catch (err) {
       console.error('getAllRoles error:', err);
     }
     
-    // Return the actual values that exist in the database
-    // These are the correct roles that should appear in the combobox
+    // Return the actual database values - these match the role table content
     return [
       { id: 1, name: 'admin', description: 'Administrador do sistema com acesso total' },
       { id: 2, name: 'user', description: 'Usuário comum com acesso ao chat legislativo' }
@@ -165,7 +176,7 @@ export class DirectStorage implements IStorage {
 
   async getRoleById(id: number) {
     const { data, error } = await supabase
-      .from('roles')
+      .from('role')
       .select('*')
       .eq('id', id)
       .single();
