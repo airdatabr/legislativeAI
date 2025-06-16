@@ -48,19 +48,41 @@ export class DirectStorage implements IStorage {
   }
 
   async createUser(insertUser: any) {
-    const { data, error } = await supabase.rpc('create_user_with_role', {
-      p_name: insertUser.name,
-      p_email: insertUser.email,
-      p_password: insertUser.password,
-      p_role_id: insertUser.role_id || 2
-    });
+    // Create user with basic fields first
+    const { role_id, ...userDataWithoutRole } = insertUser;
+    
+    const { data, error } = await supabase
+      .from('users')
+      .insert(userDataWithoutRole)
+      .select('*')
+      .single();
     
     if (error) throw error;
     
-    const newUser = data[0];
+    // Update role_id directly with SQL query if provided
+    if (role_id) {
+      const updateQuery = `UPDATE users SET role_id = ${role_id} WHERE id = ${data.id}`;
+      const { error: updateError } = await supabase.rpc('exec_sql', { query: updateQuery });
+      
+      if (!updateError) {
+        // Fetch updated user data
+        const { data: updatedData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.id)
+          .single();
+        
+        return { 
+          ...updatedData, 
+          role: (role_id === 1) ? 'admin' : 'user' 
+        };
+      }
+    }
+    
     return { 
-      ...newUser, 
-      role: newUser.role_id === 1 ? 'admin' : 'user' 
+      ...data, 
+      role_id: 2,
+      role: 'user' 
     };
   }
 
@@ -156,18 +178,16 @@ export class DirectStorage implements IStorage {
   async getAllUsers() {
     const { data, error } = await supabase
       .from('users')
-      .select(`
-        *,
-        role:role_id (
-          id,
-          name,
-          description
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    
+    // Add role information based on role_id
+    return (data || []).map(user => ({
+      ...user,
+      role: user.role_id === 1 ? 'admin' : 'user'
+    }));
   }
 
   async getUserStats() {
@@ -178,23 +198,35 @@ export class DirectStorage implements IStorage {
         id,
         name,
         email,
-        role,
-        created_at,
-        conversations:conversations(count),
-        messages:conversations(messages(count))
+        role_id,
+        created_at
       `);
     
     if (error) throw error;
     
-    // Process the data to get proper counts
-    const stats = data?.map(user => ({
-      ...user,
-      conversation_count: user.conversations?.[0]?.count || 0,
-      message_count: user.messages?.reduce((total: number, conv: any) => 
-        total + (conv.messages?.[0]?.count || 0), 0) || 0
-    })) || [];
+    // Get conversation counts for each user
+    const usersWithStats = await Promise.all((data || []).map(async (user) => {
+      const { count: convCount } = await supabase
+        .from('conversations')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      
+      const { count: msgCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .in('conversation_id', 
+          (await supabase.from('conversations').select('id').eq('user_id', user.id)).data?.map(c => c.id) || []
+        );
+      
+      return {
+        ...user,
+        role: user.role_id === 1 ? 'admin' : 'user',
+        conversation_count: convCount || 0,
+        message_count: msgCount || 0
+      };
+    }));
     
-    return stats;
+    return usersWithStats;
   }
 
   async getUsageStats() {
