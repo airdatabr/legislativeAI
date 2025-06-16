@@ -79,12 +79,13 @@ export class DirectStorage implements IStorage {
 
   async createConversation(insertConversation: any) {
     try {
-      // Simple approach - create conversation with basic fields only
+      // Include query_type in the insertion
       const { data, error } = await supabase
         .from('conversations')
         .insert({
           user_id: insertConversation.user_id,
-          title: insertConversation.title
+          title: insertConversation.title,
+          query_type: insertConversation.query_type || 'internet'
         })
         .select()
         .single();

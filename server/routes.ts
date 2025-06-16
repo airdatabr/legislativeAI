@@ -124,10 +124,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat routes
   app.post('/api/chat/query', authenticateToken, async (req: any, res) => {
     try {
-      console.log('[Chat Query] Raw request body:', req.body);
       const validatedData = chatQuerySchema.parse(req.body);
       const { question, conversationId, queryType } = validatedData;
-      console.log('[Chat Query] Parsed queryType:', queryType);
       const userId = req.user.id;
 
       let currentConversationId = conversationId;
@@ -135,13 +133,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If no conversation ID, create new conversation
       if (!currentConversationId) {
         const title = await generateConversationTitle(question);
-        console.log('[Chat Query] Creating conversation with queryType:', queryType);
         const newConversation = await storage.createConversation({
           user_id: userId,
           title,
           query_type: queryType
         });
-        console.log('[Chat Query] Created conversation:', newConversation);
         currentConversationId = newConversation.id;
       }
 

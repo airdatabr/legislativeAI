@@ -162,6 +162,9 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Implemented Municipal Legislation API following OpenAI request/response pattern with configurable URL and authentication key
 - June 16, 2025. API de Legislação Municipal now uses identical structure to ChatGPT API for seamless integration with custom legislative databases
 - June 16, 2025. Added temporary OpenAI fallback configuration for testing Municipal Laws API functionality before connecting to actual legislative database
+- June 16, 2025. Fixed critical bug in storage layer where query_type field was not being saved to database during conversation creation
+- June 16, 2025. Corrected visual indicators in conversation history - yellow circles now properly display for Laws Database queries and blue circles for Internet queries
+- June 16, 2025. Resolved Supabase insertion issue where query_type parameter was missing from createConversation function in storage-direct.ts
 
 ## User Preferences
 
