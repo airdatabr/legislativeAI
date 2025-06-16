@@ -2,26 +2,24 @@ version: '3.8'
 
 services:
   app:
-    image: minha-imagem:latest
+    image: airdatabr/legislative-ai:latest  # ← Coloque a imagem que você publicou
     deploy:
       replicas: 1
       restart_policy:
         condition: any
       labels:
-        # Configurações do Traefik
         - "traefik.enable=true"
-        - "traefik.http.routers.legislative-ai.rule=Host(`legislative-ai.airdata.com.br`)"
-        - "traefik.http.routers.legislative-ai.entrypoints=websecure"
-        - "traefik.http.routers.legislative-ai.tls=true"
-        - "traefik.http.routers.legislative-ai.tls.certresolver=le"
-        - "traefik.http.services.legislative-ai.loadbalancer.server.port=5000"
-        # Redirect HTTP para HTTPS
-        - "traefik.http.routers.legislative-ai-http.rule=Host(`legislative-ai.airdata.com.br`)"
-        - "traefik.http.routers.legislative-ai-http.entrypoints=web"
-        - "traefik.http.routers.legislative-ai-http.middlewares=redirect-to-https"
-        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-        # Especificar a rede para o Traefik
         - "traefik.docker.network=airdatanetwork"
+        - "traefik.http.routers.legislativeai.rule=Host(`legislative-ai.airdata.com.br`)"
+        - "traefik.http.routers.legislativeai.entrypoints=websecure"
+        - "traefik.http.routers.legislativeai.tls=true"
+        - "traefik.http.routers.legislativeai.tls.certresolver=le"
+        - "traefik.http.services.legislativeai.loadbalancer.server.port=5000"
+        # Redirect HTTP para HTTPS
+        - "traefik.http.routers.legislativeai-http.rule=Host(`legislative-ai.airdata.com.br`)"
+        - "traefik.http.routers.legislativeai-http.entrypoints=web"
+        - "traefik.http.routers.legislativeai-http.middlewares=https-redirect"
+        - "traefik.http.middlewares.https-redirect.redirectscheme.scheme=https"
     environment:
       - NODE_ENV=production
       - SESSION_SECRET=${SESSION_SECRET}
@@ -33,15 +31,8 @@ services:
       - INTERNAL_LAWS_API_KEY=${INTERNAL_LAWS_API_KEY}
     volumes:
       - app_data:/app/data
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     networks:
       - airdatanetwork
-      - app_network
 
 volumes:
   app_data:
@@ -49,6 +40,3 @@ volumes:
 networks:
   airdatanetwork:
     external: true
-  app_network:
-    driver: overlay
-    attachable: true
