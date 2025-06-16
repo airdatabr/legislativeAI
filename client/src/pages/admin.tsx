@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { getAuthToken, removeAuthToken } from "@/lib/auth-utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2, Save, X, Settings, Key, Eye, EyeOff } from "lucide-react";
+import { Users, UserPlus, BarChart3, MessageSquare, Calendar, Edit, Trash2, Save, X, Settings, Key, Eye, EyeOff, ArrowLeft, LogOut } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +31,7 @@ type CreateUserForm = z.infer<typeof createUserSchema>;
 export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("users");
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -44,6 +47,40 @@ export default function AdminPage() {
       role_id: 2, // Default to 'user' role
     },
   });
+
+  // Navigation functions
+  const handleBackToChat = () => {
+    setLocation('/');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthToken()}`,
+        },
+      });
+      
+      removeAuthToken();
+      queryClient.clear();
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      
+      setLocation('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao fazer logout",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Redirect non-admin users
   useEffect(() => {
@@ -350,12 +387,34 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Painel Administrativo
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Gerenciar usuários e visualizar relatórios do sistema
-        </p>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Painel Administrativo
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              Gerenciar usuários e visualizar relatórios do sistema
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              onClick={handleBackToChat}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar ao Chat
+            </Button>
+            <Button
+              onClick={handleLogout}
+              variant="destructive"
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
