@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import path from "path";
 dotenv.config();
 
 // Remove deprecated PostgreSQL environment variables for clean deployment
@@ -12,7 +13,30 @@ deprecatedVars.forEach(varName => {
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+
+// Verificar se estamos em desenvolvimento
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Importar módulo vite apenas em desenvolvimento
+let viteModule: any = null;
+if (isDevelopment) {
+  viteModule = await import('./vite');
+}
+
+// Usar funções do vite ou alternativas para produção
+const log = viteModule?.log || console.log;
+const serveStatic = viteModule?.serveStatic || ((app: any) => {
+  // Em produção, servir arquivos estáticos do diretório dist/public
+  const publicPath = path.join(process.cwd(), 'dist/public');
+  app.use(express.static(publicPath));
+  
+  // Catch-all para SPA
+  app.get('*', (req: Request, res: Response) => {
+    if (!req.path.startsWith('/api')) {
+      res.sendFile('index.html', { root: publicPath });
+    }
+  });
+});
 
 const app = express();
 app.use(express.json());
@@ -62,8 +86,8 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
+  if (isDevelopment && viteModule) {
+    await viteModule.setupVite(app, server);
   } else {
     serveStatic(app);
   }
