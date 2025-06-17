@@ -9,21 +9,18 @@ WORKDIR /app
 # Copiar arquivos de dependências
 COPY package*.json ./
 
-# Instalar TODAS as dependências (incluindo dev)
+# Instalar todas as dependências (incluindo tsx)
 RUN npm ci
 
 # Copiar código fonte
 COPY . .
 
-# Construir aplicação
+# Construir apenas o cliente
 RUN npm run build
 
-# Remover dependências de desenvolvimento após o build
-RUN npm prune --production
-
 # Criar usuário não-root
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
 
 # Alterar proprietário dos arquivos
 RUN chown -R nextjs:nodejs /app
@@ -37,5 +34,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:5000/health || exit 1
 
-# Comando de inicialização
+# Comando de inicialização usando tsx
 CMD ["npm", "run", "start"]

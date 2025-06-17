@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "node build.js",
-    "start": "NODE_ENV=production node dist/index.js",
+    "build": "vite build",
+    "start": "NODE_ENV=production tsx server/index.ts",
     "check": "tsc",
     "db:push": "drizzle-kit push"
   },
@@ -109,7 +109,7 @@
     "esbuild": "^0.25.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.19.1",
+    "tsx": "^4.20.3",
     "typescript": "5.6.3"
   },
   "optionalDependencies": {
