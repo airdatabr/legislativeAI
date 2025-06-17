@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    image: airdatabr/legislative-ai:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=airdatanetwork"
+        - "traefik.http.services.legislative.loadbalancer.server.port=5000"
+        - "traefik.http.routers.legislative.rule=Host(`legislative-ai.airdata.com.br`)"
+        - "traefik.http.routers.legislative.entrypoints=websecure"
+        - "traefik.http.routers.legislative.tls=true"
+        - "traefik.http.routers.legislative.tls.certresolver=le"
+    environment:
+      - NODE_ENV=production
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - INTERNAL_LAWS_API_URL=${INTERNAL_LAWS_API_URL}
+      - INTERNAL_LAWS_API_KEY=${INTERNAL_LAWS_API_KEY}
+    networks:
+      - airdatanetwork
+
+networks:
+  airdatanetwork:
+    external: true
