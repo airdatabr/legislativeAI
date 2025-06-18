@@ -368,6 +368,70 @@ export default function AdminPage() {
     }
   };
 
+  // Logo upload mutation
+  const uploadLogoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('logo', file);
+      
+      const response = await fetch('/api/admin/upload-logo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro no upload');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      handleEnvUpdate('ORG_LOGO_URL', data.logoUrl);
+      toast({
+        title: "Upload Concluído",
+        description: "A logomarca foi enviada com sucesso.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro no Upload",
+        description: error.message || "Ocorreu um erro ao enviar a imagem.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "A imagem deve ter no máximo 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Tipo de arquivo inválido",
+        description: "Por favor, selecione uma imagem (PNG, JPG ou SVG).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    uploadLogoMutation.mutate(file);
+  };
+
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -807,16 +871,82 @@ export default function AdminPage() {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="org-logo">URL da Logomarca</Label>
-                        <Input
-                          id="org-logo"
-                          type="text"
-                          value={envVars['ORG_LOGO_URL'] || ''}
-                          onChange={(e) => handleEnvUpdate('ORG_LOGO_URL', e.target.value)}
-                          placeholder="https://example.com/logo.png ou /assets/logo.png"
-                        />
+                        <Label htmlFor="org-logo">Logomarca</Label>
+                        <div className="space-y-3">
+                          {/* Current logo preview */}
+                          {envVars['ORG_LOGO_URL'] && (
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                              <img 
+                                src={envVars['ORG_LOGO_URL']} 
+                                alt="Logo atual" 
+                                className="h-12 w-auto object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-700">Logo atual</p>
+                                <p className="text-xs text-gray-500 truncate">{envVars['ORG_LOGO_URL']}</p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEnvUpdate('ORG_LOGO_URL', '')}
+                              >
+                                Remover
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {/* Upload input */}
+                          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                            <input
+                              type="file"
+                              id="logo-upload"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleLogoUpload}
+                            />
+                            <label htmlFor="logo-upload" className="cursor-pointer">
+                              <div className="space-y-2">
+                                <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700">
+                                    Clique para fazer upload da logomarca
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    PNG, JPG ou SVG até 5MB
+                                  </p>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                          
+                          {/* URL input as alternative */}
+                          <div className="relative">
+                            <div className="absolute inset-0 flex items-center">
+                              <div className="w-full border-t border-gray-300" />
+                            </div>
+                            <div className="relative flex justify-center text-sm">
+                              <span className="px-2 bg-white text-gray-500">ou</span>
+                            </div>
+                          </div>
+                          
+                          <Input
+                            id="org-logo-url"
+                            type="text"
+                            value={envVars['ORG_LOGO_URL'] || ''}
+                            onChange={(e) => handleEnvUpdate('ORG_LOGO_URL', e.target.value)}
+                            placeholder="Cole uma URL de imagem externa"
+                          />
+                        </div>
                         <p className="text-sm text-gray-500">
-                          URL da imagem da logomarca (PNG, JPG ou SVG recomendado)
+                          Faça upload de uma imagem ou cole uma URL externa
                         </p>
                       </div>
                     </CardContent>

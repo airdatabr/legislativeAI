@@ -1,12 +1,48 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage-direct";
 import { loginSchema, chatQuerySchema, createUserSchema } from "@shared/schema";
 import { generateLegislativeResponse, generateConversationTitle, generateLawsResponse } from "./openai";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+
+// Configure multer for file uploads
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage_multer = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `logo-${uniqueSuffix}${ext}`);
+  }
+});
+
+const upload = multer({
+  storage: storage_multer,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo não suportado. Use PNG, JPG, SVG ou WebP.'));
+    }
+  }
+});
 
 // JWT middleware
 async function authenticateToken(req: any, res: any, next: any) {
@@ -60,6 +96,8 @@ async function requireAdmin(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploaded files
+  app.use('/uploads', express.static(uploadsDir));
   // Health check endpoint
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
@@ -126,6 +164,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Logout realizado com sucesso" });
   });
 
+  // Serve uploaded files
+  app.use('/uploads', express.static(uploadsDir));
+
   // Organization branding settings endpoint (public)
   app.get('/api/branding', async (req, res) => {
     try {
@@ -138,6 +179,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching branding settings:", error);
       res.status(500).json({ message: "Erro ao buscar configurações de identidade" });
+    }
+  });
+
+  // Logo upload endpoint
+  app.post('/api/admin/upload-logo', authenticateToken, requireAdmin, upload.single('logo'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado" });
+      }
+
+      // Delete previous logo file if it exists and is not the default
+      const currentLogoUrl = process.env.ORG_LOGO_URL;
+      if (currentLogoUrl && currentLogoUrl.startsWith('/uploads/')) {
+        const currentLogoPath = path.join(process.cwd(), currentLogoUrl);
+        if (fs.existsSync(currentLogoPath)) {
+          fs.unlinkSync(currentLogoPath);
+        }
+      }
+
+      const logoUrl = `/uploads/${req.file.filename}`;
+      
+      res.json({
+        logoUrl,
+        message: "Logo enviado com sucesso"
+      });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(500).json({ message: "Erro ao fazer upload da imagem" });
     }
   });
 
