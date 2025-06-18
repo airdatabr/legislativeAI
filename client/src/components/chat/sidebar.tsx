@@ -112,9 +112,9 @@ export default function Sidebar({
   };
 
   return (
-    <div className={`${showHistory ? 'w-80' : 'w-20 md:w-32'} bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300`}>
-      {/* User Menu - Top Right */}
-      <div className="absolute top-4 right-4 z-50">
+    <div className={`${showHistory ? 'w-80' : 'w-16'} bg-white border-l border-gray-200 flex flex-col transition-all duration-300 shadow-sm`}>
+      {/* User Menu - Top Left */}
+      <div className="absolute top-4 left-4 z-50">
         <div className="relative">
           <button
             className="flex items-center text-sm text-sidebar-foreground hover:text-sidebar-primary focus:outline-none focus:ring-2 focus:ring-sidebar-primary rounded-full p-2"
@@ -123,7 +123,7 @@ export default function Sidebar({
             <User size={20} />
           </button>
           {showUserMenu && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
               <div className="py-1">
                 <div className="px-4 py-2 text-sm text-gray-500 border-b">
                   {user?.name || "Usuário"}
@@ -187,7 +187,7 @@ export default function Sidebar({
       </div>
 
       {/* Toggle Button - Fixed Position */}
-      <div className="absolute top-20 right-2 z-40">
+      <div className="absolute top-20 left-2 z-40">
         <button
           onClick={() => setShowHistory(!showHistory)}
           className="p-2 hover:bg-sidebar-accent rounded-sm transition-colors duration-150 bg-sidebar/80 backdrop-blur-sm border border-sidebar-border"
