@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, LogOut, ChevronDown, ChevronUp, Settings, History } from "lucide-react";
+import { Plus, User, LogOut, History, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -66,7 +66,6 @@ export default function Sidebar({
     
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       return 'Data inválida';
     }
@@ -86,7 +85,6 @@ export default function Sidebar({
 
   const handleLogout = async () => {
     try {
-      // Chama o endpoint de logout no backend
       await fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
@@ -96,7 +94,6 @@ export default function Sidebar({
     } catch (error) {
       console.error('Erro no logout:', error);
     } finally {
-      // Remove o token e limpa os dados do usuário
       removeAuthToken();
       queryClient.setQueryData(["/api/auth/user"], () => {
         return null;
@@ -106,24 +103,126 @@ export default function Sidebar({
         title: "Logout realizado",
         description: "Você foi desconectado com sucesso.",
       });
-      // Redireciona para a página inicial
       setLocation("/");
     }
   };
 
   return (
-    <div className={`${showHistory ? 'w-80' : 'w-16'} bg-white border-l border-gray-200 flex flex-col transition-all duration-300 shadow-sm`}>
-      {/* User Menu - Top Left */}
-      <div className="absolute top-4 left-4 z-50">
+    <div className={`${showHistory ? 'w-80' : 'w-16'} bg-gray-50 border-l border-gray-200 flex flex-col transition-all duration-300`}>
+      {/* Header with toggle */}
+      <div className="p-3 border-b border-gray-200">
+        <div className={`flex items-center ${showHistory ? 'justify-between' : 'justify-center'}`}>
+          {showHistory && (
+            <div className="flex items-center space-x-2">
+              <img 
+                src={cabedeloLogo} 
+                alt="Câmara Municipal de Cabedelo" 
+                className="h-6"
+              />
+              <span className="text-sm font-medium text-gray-900">Histórico</span>
+            </div>
+          )}
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+            title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
+          >
+            <History size={16} className="text-gray-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* New Chat Button */}
+      {showHistory ? (
+        <div className="p-3 border-b border-gray-200">
+          <Button
+            onClick={onNewConversation}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 px-4 text-sm font-medium"
+          >
+            <Plus className="mr-2" size={16} />
+            Nova Consulta
+          </Button>
+        </div>
+      ) : (
+        <div className="p-2 border-b border-gray-200">
+          <button
+            onClick={onNewConversation}
+            className="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            title="Nova Consulta"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* History List */}
+      <div className="flex-1 overflow-y-auto">
+        {showHistory && (
+          <div className="p-3 space-y-2">
+            {isLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-3 rounded-lg bg-gray-200 animate-pulse">
+                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p className="text-sm">Nenhuma conversa ainda.</p>
+                <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
+              </div>
+            ) : (
+              conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-200 ${
+                    currentConversationId === conversation.id ? 'bg-blue-100 border border-blue-200' : 'bg-white'
+                  }`}
+                  onClick={() => onConversationSelect(conversation.id)}
+                >
+                  <div className="flex items-start gap-2">
+                    <div 
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        conversation.query_type === 'laws' 
+                          ? 'bg-yellow-500' 
+                          : 'bg-blue-500'
+                      }`}
+                      title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-gray-900 truncate">
+                        {conversation.title}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {conversation.date}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* User Menu at bottom */}
+      <div className="mt-auto p-3 border-t border-gray-200">
         <div className="relative">
           <button
-            className="flex items-center text-sm text-sidebar-foreground hover:text-sidebar-primary focus:outline-none focus:ring-2 focus:ring-sidebar-primary rounded-full p-2"
+            className={`w-full flex items-center ${showHistory ? 'justify-start px-3' : 'justify-center'} py-2 hover:bg-gray-200 rounded-lg transition-colors`}
             onClick={() => setShowUserMenu(!showUserMenu)}
           >
-            <User size={20} />
+            <User size={20} className="text-gray-600" />
+            {showHistory && (
+              <span className="ml-2 text-sm text-gray-700 truncate">
+                {user?.name || "Usuário"}
+              </span>
+            )}
           </button>
           {showUserMenu && (
-            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200">
+            <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200">
               <div className="py-1">
                 <div className="px-4 py-2 text-sm text-gray-500 border-b">
                   {user?.name || "Usuário"}
@@ -151,119 +250,6 @@ export default function Sidebar({
             </div>
           )}
         </div>
-      </div>
-
-      {/* Header */}
-      <div className={`p-4 border-b border-sidebar-border ${!showHistory ? 'px-2' : ''}`}>
-        {showHistory ? (
-          <div className="flex flex-col items-center text-center mb-4">
-            <img 
-              src={cabedeloLogo} 
-              alt="Câmara Municipal de Cabedelo" 
-              className="h-12 mb-3"
-            />
-            <div>
-              <h1 className="text-sm font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
-              <p className="text-xs text-sidebar-foreground/60">Câmara de Cabedelo</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center text-center mb-4">
-            <img 
-              src={cabedeloLogo} 
-              alt="Câmara Municipal de Cabedelo" 
-              className="h-8 mb-2"
-            />
-          </div>
-        )}
-        <Button
-          onClick={onNewConversation}
-          className={`w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-sidebar-primary focus:ring-offset-2 transition-colors duration-200 ${!showHistory ? 'px-2 justify-center' : ''}`}
-          title="Nova Consulta"
-        >
-          <Plus className={showHistory ? "mr-2" : ""} size={16} />
-          {showHistory && "Nova Consulta"}
-        </Button>
-      </div>
-
-      {/* Toggle Button - Fixed Position */}
-      <div className="absolute top-20 left-2 z-40">
-        <button
-          onClick={() => setShowHistory(!showHistory)}
-          className="p-2 hover:bg-sidebar-accent rounded-sm transition-colors duration-150 bg-sidebar/80 backdrop-blur-sm border border-sidebar-border"
-          title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
-        >
-          {showHistory ? (
-            <ChevronUp size={16} className="text-sidebar-foreground/60" />
-          ) : (
-            <History size={16} className="text-sidebar-foreground/60" />
-          )}
-        </button>
-      </div>
-
-      {/* History Section */}
-      <div className={`flex-1 overflow-y-auto ${showHistory ? 'p-4' : 'p-2'}`}>
-        {showHistory && (
-          <div className="mb-3">
-            <h2 className="text-sm font-medium text-sidebar-foreground">Histórico de Conversas</h2>
-          </div>
-        )}
-        
-        {showHistory && (
-          <div className="space-y-2">
-            {isLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="p-3 rounded-md bg-sidebar-accent animate-pulse">
-                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
-                  </div>
-                ))}
-              </div>
-            ) : conversations.length === 0 ? (
-              <div className="text-center text-sidebar-foreground/60 py-8">
-                <p className="text-sm">Nenhuma conversa ainda.</p>
-                <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
-              </div>
-            ) : (
-              conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  className={`sidebar-item p-3 rounded-md cursor-pointer transition-colors duration-150 ${
-                    currentConversationId === conversation.id ? 'active' : ''
-                  }`}
-                  onClick={() => onConversationSelect(conversation.id)}
-                >
-                  <div className="flex items-start gap-2">
-                    <div 
-                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                        conversation.query_type === 'laws' 
-                          ? 'bg-yellow-500' 
-                          : 'bg-blue-500'
-                      }`}
-                      title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm text-sidebar-foreground truncate">
-                        {conversation.title}
-                      </div>
-                      <div className="text-xs text-sidebar-foreground/60 mt-1">
-                        {conversation.date}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-        
-        {!showHistory && (
-          <div className="text-center text-sidebar-foreground/60 py-4">
-            <p className="text-xs">Histórico oculto</p>
-            <p className="text-xs opacity-70 mt-1">Clique no ícone para mostrar</p>
-          </div>
-        )}
       </div>
     </div>
   );
