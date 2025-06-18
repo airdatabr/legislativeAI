@@ -23,10 +23,11 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="h-screen flex bg-white">
+    <div className="h-screen bg-white">
       <ChatArea
         conversationId={currentConversationId}
         onMessageSent={handleMessageSent}
+        onNewConversation={handleNewConversation}
         refreshTrigger={refreshTrigger}
       />
       <Sidebar

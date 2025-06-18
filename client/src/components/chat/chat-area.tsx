@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Send, Info, Globe, BookOpen } from "lucide-react";
+import { Send, Info, Globe, BookOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthToken } from "@/lib/auth-utils";
 import { apiRequest } from "@/lib/queryClient";
 import Message from "./message";
+import cabedeloLogo from "@/assets/cabedelo-logo.png";
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -17,10 +18,11 @@ interface ChatMessage {
 interface ChatAreaProps {
   conversationId: number | null;
   onMessageSent: (conversationId: number) => void;
+  onNewConversation: () => void;
   refreshTrigger: number;
 }
 
-export default function ChatArea({ conversationId, onMessageSent, refreshTrigger }: ChatAreaProps) {
+export default function ChatArea({ conversationId, onMessageSent, onNewConversation, refreshTrigger }: ChatAreaProps) {
   const [message, setMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [queryType, setQueryType] = useState<'internet' | 'laws'>('internet');
@@ -115,45 +117,53 @@ export default function ChatArea({ conversationId, onMessageSent, refreshTrigger
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Chat Header */}
+      {/* Main Header - Always Visible */}
       <div className="border-b border-gray-200 p-4 bg-white">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">
-          {conversation ? conversation.title : "Consulta Legislativa"}
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <img 
+              src={cabedeloLogo} 
+              alt="Câmara Municipal de Cabedelo" 
+              className="h-8"
+            />
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">Assistente Legislativo</h1>
+              <p className="text-sm text-gray-600">Câmara Municipal de Cabedelo</p>
+            </div>
+          </div>
+          <button
+            onClick={onNewConversation}
+            className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            <Plus className="mr-2" size={16} />
+            Nova Consulta
+          </button>
+        </div>
         
         {/* Query Type Selector */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                queryType === 'internet' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-              onClick={() => setQueryType('internet')}
-            >
-              <Globe className="w-4 h-4 mr-1.5" />
-              Internet
-            </button>
-            <button
-              className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                queryType === 'laws' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-              onClick={() => setQueryType('laws')}
-            >
-              <BookOpen className="w-4 h-4 mr-1.5" />
-              Base de Leis
-            </button>
-          </div>
-          
-          <p className="text-sm text-gray-600">
-            {queryType === 'internet' 
-              ? 'Consulta geral sobre legislação'
-              : 'Base de leis municipais de Cabedelo'
-            }
-          </p>
+        <div className="flex bg-gray-100 rounded-lg p-1 w-fit">
+          <button
+            className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              queryType === 'internet' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+            onClick={() => setQueryType('internet')}
+          >
+            <Globe className="w-4 h-4 mr-1.5" />
+            Internet
+          </button>
+          <button
+            className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              queryType === 'laws' 
+                ? 'bg-white text-blue-600 shadow-sm' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+            onClick={() => setQueryType('laws')}
+          >
+            <BookOpen className="w-4 h-4 mr-1.5" />
+            Base de Leis
+          </button>
         </div>
       </div>
 
