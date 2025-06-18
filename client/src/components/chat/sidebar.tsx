@@ -112,7 +112,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className="w-80 bg-sidebar border-r border-sidebar-border flex flex-col">
+    <div className={`${showHistory ? 'w-80' : 'w-20 md:w-32'} bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300`}>
       {/* User Menu - Top Right */}
       <div className="absolute top-4 right-4 z-50">
         <div className="relative">
@@ -154,31 +154,44 @@ export default function Sidebar({
       </div>
 
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
-        <div className="flex flex-col items-center text-center mb-4">
-          <img 
-            src={cabedeloLogo} 
-            alt="Câmara Municipal de Cabedelo" 
-            className="h-12 mb-3"
-          />
-          <div>
-            <h1 className="text-sm font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
-            <p className="text-xs text-sidebar-foreground/60">Câmara de Cabedelo</p>
+      <div className={`p-4 border-b border-sidebar-border ${!showHistory ? 'px-2' : ''}`}>
+        {showHistory ? (
+          <div className="flex flex-col items-center text-center mb-4">
+            <img 
+              src={cabedeloLogo} 
+              alt="Câmara Municipal de Cabedelo" 
+              className="h-12 mb-3"
+            />
+            <div>
+              <h1 className="text-sm font-semibold text-sidebar-foreground">Assistente Legislativo</h1>
+              <p className="text-xs text-sidebar-foreground/60">Câmara de Cabedelo</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col items-center text-center mb-4">
+            <img 
+              src={cabedeloLogo} 
+              alt="Câmara Municipal de Cabedelo" 
+              className="h-8 mb-2"
+            />
+          </div>
+        )}
         <Button
           onClick={onNewConversation}
-          className="w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-sidebar-primary focus:ring-offset-2 transition-colors duration-200"
+          className={`w-full bg-sidebar-primary text-sidebar-primary-foreground hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-sidebar-primary focus:ring-offset-2 transition-colors duration-200 ${!showHistory ? 'px-2 justify-center' : ''}`}
+          title="Nova Consulta"
         >
-          <Plus className="mr-2" size={16} />
-          Nova Consulta
+          <Plus className={showHistory ? "mr-2" : ""} size={16} />
+          {showHistory && "Nova Consulta"}
         </Button>
       </div>
 
       {/* History Section */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium text-sidebar-foreground">Histórico de Conversas</h2>
+      <div className={`flex-1 overflow-y-auto ${showHistory ? 'p-4' : 'p-2'}`}>
+        <div className={`flex items-center ${showHistory ? 'justify-between' : 'justify-center'} mb-3`}>
+          {showHistory && (
+            <h2 className="text-sm font-medium text-sidebar-foreground">Histórico de Conversas</h2>
+          )}
           <button
             onClick={() => setShowHistory(!showHistory)}
             className="p-1 hover:bg-sidebar-accent rounded-sm transition-colors duration-150"
@@ -187,7 +200,7 @@ export default function Sidebar({
             {showHistory ? (
               <ChevronUp size={16} className="text-sidebar-foreground/60" />
             ) : (
-              <ChevronDown size={16} className="text-sidebar-foreground/60" />
+              <History size={16} className="text-sidebar-foreground/60" />
             )}
           </button>
         </div>
@@ -243,9 +256,8 @@ export default function Sidebar({
         
         {!showHistory && (
           <div className="text-center text-sidebar-foreground/60 py-4">
-            <History size={20} className="mx-auto mb-2 opacity-50" />
             <p className="text-xs">Histórico oculto</p>
-            <p className="text-xs opacity-70">Clique na seta para mostrar</p>
+            <p className="text-xs opacity-70 mt-1">Clique no ícone para mostrar</p>
           </div>
         )}
       </div>
