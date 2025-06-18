@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { History, User, LogOut, Settings } from "lucide-react";
+import { Menu, User, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken, getAuthToken } from "@/lib/auth-utils";
@@ -106,19 +106,19 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Floating History Button - Top Right */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Floating History Button - Top Left */}
+      <div className="fixed top-4 left-4 z-50">
         <button
           onClick={() => setShowHistory(!showHistory)}
           className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
           title="Histórico de conversas"
         >
-          <History size={20} className="text-gray-600" />
+          <Menu size={20} className="text-gray-600" />
         </button>
       </div>
 
       {/* Floating User Menu - Top Right Corner */}
-      <div className="fixed top-4 right-20 z-50">
+      <div className="fixed top-4 right-4 z-50">
         <div className="relative">
           <button
             className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
@@ -167,7 +167,7 @@ export default function Sidebar({
           />
           
           {/* History Panel */}
-          <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-xl z-50 transform transition-transform duration-300">
+          <div className="fixed top-0 left-0 w-80 h-full bg-white shadow-xl z-50 transform transition-transform duration-300">
             <div className="flex flex-col h-full">
               {/* Header */}
               <div className="p-4 border-b border-gray-200">
