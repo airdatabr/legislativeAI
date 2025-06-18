@@ -126,6 +126,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Logout realizado com sucesso" });
   });
 
+  // Organization branding settings endpoint (public)
+  app.get('/api/branding', async (req, res) => {
+    try {
+      const branding = {
+        orgName: process.env.ORG_NAME || 'Câmara Municipal de Cabedelo',
+        orgTitle: process.env.ORG_TITLE || 'Assistente Legislativo',
+        orgLogoUrl: process.env.ORG_LOGO_URL || '/src/assets/cabedelo-logo.png'
+      };
+      res.json(branding);
+    } catch (error) {
+      console.error("Error fetching branding settings:", error);
+      res.status(500).json({ message: "Erro ao buscar configurações de identidade" });
+    }
+  });
+
   // Chat routes
   app.post('/api/chat/query', authenticateToken, async (req: any, res) => {
     try {
@@ -349,6 +364,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Return current environment variables (masked for security)
       const envSettings = {
+        ORG_NAME: process.env.ORG_NAME || '',
+        ORG_TITLE: process.env.ORG_TITLE || '',
+        ORG_LOGO_URL: process.env.ORG_LOGO_URL || '',
         OPENAI_API_KEY: process.env.OPENAI_API_KEY ? '***' + process.env.OPENAI_API_KEY.slice(-4) : '',
         SUPABASE_URL: process.env.SUPABASE_URL || '',
         SUPABASE_KEY: process.env.SUPABASE_KEY ? '***' + process.env.SUPABASE_KEY.slice(-4) : '',

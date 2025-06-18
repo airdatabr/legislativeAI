@@ -768,6 +768,60 @@ export default function AdminPage() {
                 </div>
               ) : (
                 <div className="space-y-8">
+                  {/* Organization Branding Configuration Card */}
+                  <Card className="border-indigo-200 dark:border-indigo-800">
+                    <CardHeader className="bg-indigo-50 dark:bg-indigo-950 rounded-t-lg">
+                      <CardTitle className="flex items-center gap-2 text-indigo-800 dark:text-indigo-200">
+                        <Settings className="h-5 w-5" />
+                        Identidade Visual do Órgão
+                      </CardTitle>
+                      <CardDescription className="text-indigo-600 dark:text-indigo-300">
+                        Personalize o nome e logomarca exibidos no sistema
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 p-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="org-name">Nome do Órgão</Label>
+                        <Input
+                          id="org-name"
+                          type="text"
+                          value={envVars['ORG_NAME'] || ''}
+                          onChange={(e) => handleEnvUpdate('ORG_NAME', e.target.value)}
+                          placeholder="Câmara Municipal de Cabedelo"
+                        />
+                        <p className="text-sm text-gray-500">
+                          Nome oficial da instituição que será exibido no cabeçalho
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="org-title">Título do Sistema</Label>
+                        <Input
+                          id="org-title"
+                          type="text"
+                          value={envVars['ORG_TITLE'] || ''}
+                          onChange={(e) => handleEnvUpdate('ORG_TITLE', e.target.value)}
+                          placeholder="Assistente Legislativo"
+                        />
+                        <p className="text-sm text-gray-500">
+                          Título principal do sistema exibido no cabeçalho
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="org-logo">URL da Logomarca</Label>
+                        <Input
+                          id="org-logo"
+                          type="text"
+                          value={envVars['ORG_LOGO_URL'] || ''}
+                          onChange={(e) => handleEnvUpdate('ORG_LOGO_URL', e.target.value)}
+                          placeholder="https://example.com/logo.png ou /assets/logo.png"
+                        />
+                        <p className="text-sm text-gray-500">
+                          URL da imagem da logomarca (PNG, JPG ou SVG recomendado)
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* OpenAI Configuration Card */}
                   <Card className="border-blue-200 dark:border-blue-800">
                     <CardHeader className="bg-blue-50 dark:bg-blue-950 rounded-t-lg">

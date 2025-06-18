@@ -31,6 +31,16 @@ export default function ChatArea({ conversationId, onMessageSent, onNewConversat
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Fetch branding configuration
+  const { data: branding } = useQuery({
+    queryKey: ["/api/branding"],
+    queryFn: async () => {
+      const response = await fetch('/api/branding');
+      if (!response.ok) throw new Error('Failed to fetch branding');
+      return response.json();
+    }
+  });
+
   const { data: conversation, isLoading, refetch } = useQuery({
     queryKey: ["/api/chat/history", conversationId, refreshTrigger],
     queryFn: async () => {
@@ -122,13 +132,21 @@ export default function ChatArea({ conversationId, onMessageSent, onNewConversat
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <img 
-              src={cabedeloLogo} 
-              alt="Câmara Municipal de Cabedelo" 
+              src={branding?.orgLogoUrl || cabedeloLogo} 
+              alt={branding?.orgName || "Câmara Municipal de Cabedelo"} 
               className="h-12"
+              onError={(e) => {
+                // Fallback to default logo if custom logo fails to load
+                e.currentTarget.src = cabedeloLogo;
+              }}
             />
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Assistente Legislativo</h1>
-              <p className="text-sm text-gray-600">Câmara Municipal de Cabedelo</p>
+              <h1 className="text-lg font-semibold text-gray-900">
+                {branding?.orgTitle || "Assistente Legislativo"}
+              </h1>
+              <p className="text-sm text-gray-600">
+                {branding?.orgName || "Câmara Municipal de Cabedelo"}
+              </p>
             </div>
           </div>
         </div>
