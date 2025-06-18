@@ -106,8 +106,8 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Menu Button - Always Visible Fixed Position */}
-      <div className="fixed top-4 left-4 z-50">
+      {/* Menu Button - Positioned below header */}
+      <div className="fixed top-20 left-4 z-50">
         <button
           onClick={() => setShowHistory(!showHistory)}
           className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
@@ -158,13 +158,13 @@ export default function Sidebar({
       </div>
 
       {/* Sidebar Panel */}
-      <div className={`${showHistory ? 'w-80' : 'w-0'} transition-all duration-300 bg-gray-900 h-full flex flex-col overflow-hidden`}>
+      <div className={`${showHistory ? 'w-80' : 'w-0'} transition-all duration-300 bg-gray-100 h-full flex flex-col overflow-hidden border-r border-gray-200`}>
         {/* Sidebar Content */}
         {showHistory && (
           <div className="flex flex-col h-full pt-20 px-4">
             {/* Header */}
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-white">Histórico</h2>
+              <h2 className="text-lg font-semibold text-gray-800">Histórico</h2>
             </div>
 
             {/* History List */}
@@ -172,14 +172,14 @@ export default function Sidebar({
               {isLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="p-3 rounded-lg bg-gray-800 animate-pulse">
-                      <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+                    <div key={i} className="p-3 rounded-lg bg-gray-200 animate-pulse">
+                      <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-300 rounded w-1/2"></div>
                     </div>
                   ))}
                 </div>
               ) : conversations.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
+                <div className="text-center text-gray-500 py-8">
                   <p className="text-sm">Nenhuma conversa ainda.</p>
                   <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
                 </div>
@@ -188,8 +188,8 @@ export default function Sidebar({
                   {conversations.map((conversation) => (
                     <div
                       key={conversation.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-800 ${
-                        currentConversationId === conversation.id ? 'bg-gray-700' : 'bg-gray-800'
+                      className={`p-3 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-200 ${
+                        currentConversationId === conversation.id ? 'bg-gray-200' : 'bg-transparent'
                       }`}
                       onClick={() => {
                         onConversationSelect(conversation.id);
@@ -205,10 +205,10 @@ export default function Sidebar({
                           title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
                         />
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-white truncate">
+                          <div className="font-medium text-sm text-gray-800 truncate">
                             {conversation.title}
                           </div>
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="text-xs text-gray-500 mt-1">
                             {conversation.date}
                           </div>
                         </div>
