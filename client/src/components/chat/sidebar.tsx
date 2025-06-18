@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, User, LogOut, ChevronDown, Settings } from "lucide-react";
+import { Plus, User, LogOut, ChevronDown, ChevronUp, Settings, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,7 @@ export default function Sidebar({
   refreshTrigger 
 }: SidebarProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -174,55 +175,79 @@ export default function Sidebar({
         </Button>
       </div>
 
-      {/* History List */}
+      {/* History Section */}
       <div className="flex-1 overflow-y-auto p-4">
-        <h2 className="text-sm font-medium text-sidebar-foreground mb-3">Histórico de Conversas</h2>
-        <div className="space-y-2">
-          {isLoading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="p-3 rounded-md bg-sidebar-accent animate-pulse">
-                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-300 rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
-          ) : conversations.length === 0 ? (
-            <div className="text-center text-sidebar-foreground/60 py-8">
-              <p className="text-sm">Nenhuma conversa ainda.</p>
-              <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
-            </div>
-          ) : (
-            conversations.map((conversation) => (
-              <div
-                key={conversation.id}
-                className={`sidebar-item p-3 rounded-md cursor-pointer transition-colors duration-150 ${
-                  currentConversationId === conversation.id ? 'active' : ''
-                }`}
-                onClick={() => onConversationSelect(conversation.id)}
-              >
-                <div className="flex items-start gap-2">
-                  <div 
-                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                      conversation.query_type === 'laws' 
-                        ? 'bg-yellow-500' 
-                        : 'bg-blue-500'
-                    }`}
-                    title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-sidebar-foreground truncate">
-                      {conversation.title}
-                    </div>
-                    <div className="text-xs text-sidebar-foreground/60 mt-1">
-                      {conversation.date}
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-medium text-sidebar-foreground">Histórico de Conversas</h2>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="p-1 hover:bg-sidebar-accent rounded-sm transition-colors duration-150"
+            title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
+          >
+            {showHistory ? (
+              <ChevronUp size={16} className="text-sidebar-foreground/60" />
+            ) : (
+              <ChevronDown size={16} className="text-sidebar-foreground/60" />
+            )}
+          </button>
+        </div>
+        
+        {showHistory && (
+          <div className="space-y-2">
+            {isLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-3 rounded-md bg-sidebar-accent animate-pulse">
+                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center text-sidebar-foreground/60 py-8">
+                <p className="text-sm">Nenhuma conversa ainda.</p>
+                <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
+              </div>
+            ) : (
+              conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`sidebar-item p-3 rounded-md cursor-pointer transition-colors duration-150 ${
+                    currentConversationId === conversation.id ? 'active' : ''
+                  }`}
+                  onClick={() => onConversationSelect(conversation.id)}
+                >
+                  <div className="flex items-start gap-2">
+                    <div 
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        conversation.query_type === 'laws' 
+                          ? 'bg-yellow-500' 
+                          : 'bg-blue-500'
+                      }`}
+                      title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm text-sidebar-foreground truncate">
+                        {conversation.title}
+                      </div>
+                      <div className="text-xs text-sidebar-foreground/60 mt-1">
+                        {conversation.date}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
+        
+        {!showHistory && (
+          <div className="text-center text-sidebar-foreground/60 py-4">
+            <History size={20} className="mx-auto mb-2 opacity-50" />
+            <p className="text-xs">Histórico oculto</p>
+            <p className="text-xs opacity-70">Clique na seta para mostrar</p>
+          </div>
+        )}
       </div>
     </div>
   );
