@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Menu, User, LogOut, Settings } from "lucide-react";
+import { Menu, User, LogOut, Settings, Plus, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken, getAuthToken } from "@/lib/auth-utils";
@@ -21,6 +21,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ 
+  onNewConversation,
   onConversationSelect, 
   currentConversationId,
   refreshTrigger 
@@ -106,17 +107,6 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Menu Button - Positioned below header */}
-      <div className="fixed top-20 left-4 z-50">
-        <button
-          onClick={() => setShowHistory(!showHistory)}
-          className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
-          title="Menu"
-        >
-          <Menu size={20} className="text-gray-600" />
-        </button>
-      </div>
-
       {/* User Menu - Top Right Fixed Position */}
       <div className="fixed top-4 right-4 z-50">
         <div className="relative">
@@ -157,67 +147,84 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Sidebar Panel */}
-      <div className={`${showHistory ? 'w-80' : 'w-0'} transition-all duration-300 bg-gray-100 h-full flex flex-col overflow-hidden border-r border-gray-200`}>
-        {/* Sidebar Content */}
-        {showHistory && (
-          <div className="flex flex-col h-full pt-20 px-4">
-            {/* Header */}
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Histórico</h2>
-            </div>
+      {/* Sidebar Panel - Always visible with minimum width */}
+      <div className={`${showHistory ? 'w-80' : 'w-14'} transition-all duration-300 bg-gray-100 h-full flex flex-col border-r border-gray-200`}>
+        {/* Sidebar Header - Always visible */}
+        <div className="p-3 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
+              title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
+            >
+              <Clock size={18} className="text-gray-600" />
+            </button>
+            {showHistory && (
+              <>
+                <span className="text-sm font-medium text-gray-800">Histórico</span>
+                <button
+                  onClick={onNewConversation}
+                  className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors ml-auto"
+                  title="Nova conversa"
+                >
+                  <Plus size={16} className="text-gray-600" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
 
-            {/* History List */}
-            <div className="flex-1 overflow-y-auto">
-              {isLoading ? (
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="p-3 rounded-lg bg-gray-200 animate-pulse">
-                      <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-300 rounded w-1/2"></div>
-                    </div>
-                  ))}
-                </div>
-              ) : conversations.length === 0 ? (
-                <div className="text-center text-gray-500 py-8">
-                  <p className="text-sm">Nenhuma conversa ainda.</p>
-                  <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {conversations.map((conversation) => (
-                    <div
-                      key={conversation.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-200 ${
-                        currentConversationId === conversation.id ? 'bg-gray-200' : 'bg-transparent'
-                      }`}
-                      onClick={() => {
-                        onConversationSelect(conversation.id);
-                      }}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div 
-                          className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                            conversation.query_type === 'laws' 
-                              ? 'bg-yellow-500' 
-                              : 'bg-blue-500'
-                          }`}
-                          title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-gray-800 truncate">
-                            {conversation.title}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {conversation.date}
-                          </div>
+        {/* Sidebar Content - Only when expanded */}
+        {showHistory && (
+          <div className="flex-1 overflow-y-auto p-3">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="p-3 rounded-lg bg-gray-200 animate-pulse">
+                    <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            ) : conversations.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                <p className="text-sm">Nenhuma conversa ainda.</p>
+                <p className="text-xs mt-1">Inicie uma nova consulta para começar.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {conversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-gray-200 ${
+                      currentConversationId === conversation.id ? 'bg-gray-200' : 'bg-transparent'
+                    }`}
+                    onClick={() => {
+                      onConversationSelect(conversation.id);
+                    }}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div 
+                        className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                          conversation.query_type === 'laws' 
+                            ? 'bg-yellow-500' 
+                            : 'bg-blue-500'
+                        }`}
+                        title={conversation.query_type === 'laws' ? 'Base de Leis' : 'Internet'}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm text-gray-800 truncate">
+                          {conversation.title}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {conversation.date}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -131,13 +131,6 @@ export default function ChatArea({ conversationId, onMessageSent, onNewConversat
               <p className="text-sm text-gray-600">Câmara Municipal de Cabedelo</p>
             </div>
           </div>
-          <button
-            onClick={onNewConversation}
-            className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-          >
-            <Plus className="mr-2" size={16} />
-            Nova Consulta
-          </button>
         </div>
         
         {/* Query Type Selector */}
