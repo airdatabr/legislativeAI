@@ -186,24 +186,28 @@ export default function Sidebar({
         </Button>
       </div>
 
+      {/* Toggle Button - Fixed Position */}
+      <div className="absolute top-20 right-2 z-40">
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          className="p-2 hover:bg-sidebar-accent rounded-sm transition-colors duration-150 bg-sidebar/80 backdrop-blur-sm border border-sidebar-border"
+          title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
+        >
+          {showHistory ? (
+            <ChevronUp size={16} className="text-sidebar-foreground/60" />
+          ) : (
+            <History size={16} className="text-sidebar-foreground/60" />
+          )}
+        </button>
+      </div>
+
       {/* History Section */}
       <div className={`flex-1 overflow-y-auto ${showHistory ? 'p-4' : 'p-2'}`}>
-        <div className={`flex items-center ${showHistory ? 'justify-between' : 'justify-center'} mb-3`}>
-          {showHistory && (
+        {showHistory && (
+          <div className="mb-3">
             <h2 className="text-sm font-medium text-sidebar-foreground">Histórico de Conversas</h2>
-          )}
-          <button
-            onClick={() => setShowHistory(!showHistory)}
-            className="p-1 hover:bg-sidebar-accent rounded-sm transition-colors duration-150"
-            title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
-          >
-            {showHistory ? (
-              <ChevronUp size={16} className="text-sidebar-foreground/60" />
-            ) : (
-              <History size={16} className="text-sidebar-foreground/60" />
-            )}
-          </button>
-        </div>
+          </div>
+        )}
         
         {showHistory && (
           <div className="space-y-2">
