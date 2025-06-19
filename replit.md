@@ -184,7 +184,15 @@ This account can be used to access the legislative assistant and test the chat f
 - June 16, 2025. Removed PostgreSQL system dependency from Replit environment to prevent automatic injection of deprecated variables during deployment
 - June 16, 2025. Created comprehensive Linux deployment guide (DEPLOY_LINUX.md) with step-by-step instructions for production deployment on Linux servers
 - June 16, 2025. Added health check endpoint (/health) for production monitoring and deployment verification
+- June 18, 2025. Redesigned complete interface to match Google Gemini layout patterns with left sidebar that empurrs content instead of overlaying
+- June 18, 2025. Implemented collapsible sidebar with gray background, border line, and minimum width when collapsed showing only icons
+- June 18, 2025. Added parametrizable organization branding system with fields for name, title, and logo in administrative settings
+- June 18, 2025. Implemented image upload functionality for organization logo with drag-and-drop interface, file validation, and preview
+- June 18, 2025. Reorganized sidebar navigation with Nova Conversa (PenTool icon) and Histórico (Clock icon) buttons positioned vertically like Gemini
+- June 18, 2025. Increased logo size in header for better visibility and brand prominence
+- June 18, 2025. Created comprehensive branding API endpoint (/api/branding) for dynamic organization customization
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Interface Design: Prefers Google Gemini-style layout with left sidebar, clean organization, and intuitive navigation patterns.
