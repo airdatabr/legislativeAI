@@ -164,9 +164,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Logout realizado com sucesso" });
   });
 
-  // Serve uploaded files
-  app.use('/uploads', express.static(uploadsDir));
-
   // Organization branding settings endpoint (public)
   app.get('/api/branding', async (req, res) => {
     try {
