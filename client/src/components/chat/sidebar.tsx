@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Menu, User, LogOut, Settings, Plus, Clock } from "lucide-react";
+import { Menu, User, LogOut, Settings, Plus, Clock, PenTool } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken, getAuthToken } from "@/lib/auth-utils";
@@ -107,18 +107,8 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Fixed Buttons - Top Right */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
-        {/* Nova Conversa Button */}
-        <button
-          onClick={onNewConversation}
-          className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
-          title="Nova conversa"
-        >
-          <Plus size={20} className="text-gray-600" />
-        </button>
-        
-        {/* User Menu */}
+      {/* User Menu - Top Right Fixed Position */}
+      <div className="fixed top-4 right-4 z-50">
         <div className="relative">
           <button
             className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
@@ -159,21 +149,33 @@ export default function Sidebar({
 
       {/* Sidebar Panel - Always visible with minimum width */}
       <div className={`${showHistory ? 'w-80' : 'w-14'} transition-all duration-300 bg-gray-100 h-full flex flex-col border-r border-gray-200`}>
-        {/* Sidebar Header - Always visible */}
-        <div className="p-3 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowHistory(!showHistory)}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors flex-shrink-0"
-              title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
-            >
-              <Clock size={18} className="text-gray-600" />
-            </button>
-            {showHistory && (
-              <span className="text-sm font-medium text-gray-800">Histórico</span>
-            )}
-          </div>
+        {/* Sidebar Buttons - Always visible */}
+        <div className="p-3 space-y-2">
+          {/* Nova Conversa Button */}
+          <button
+            onClick={onNewConversation}
+            className="w-full p-2 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center"
+            title="Nova conversa"
+          >
+            <PenTool size={18} className="text-gray-600" />
+          </button>
+          
+          {/* History Toggle Button */}
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="w-full p-2 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center"
+            title={showHistory ? "Ocultar histórico" : "Mostrar histórico"}
+          >
+            <Clock size={18} className="text-gray-600" />
+          </button>
         </div>
+
+        {/* Sidebar Header - Only when expanded */}
+        {showHistory && (
+          <div className="px-3 pb-3 border-b border-gray-200">
+            <span className="text-sm font-medium text-gray-800">Histórico</span>
+          </div>
+        )}
 
         {/* Sidebar Content - Only when expanded */}
         {showHistory && (
