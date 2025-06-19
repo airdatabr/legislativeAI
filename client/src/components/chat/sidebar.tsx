@@ -107,8 +107,18 @@ export default function Sidebar({
 
   return (
     <>
-      {/* User Menu - Top Right Fixed Position */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Fixed Buttons - Top Right */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {/* Nova Conversa Button */}
+        <button
+          onClick={onNewConversation}
+          className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
+          title="Nova conversa"
+        >
+          <Plus size={20} className="text-gray-600" />
+        </button>
+        
+        {/* User Menu */}
         <div className="relative">
           <button
             className="p-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg shadow-sm transition-colors"
@@ -160,16 +170,7 @@ export default function Sidebar({
               <Clock size={18} className="text-gray-600" />
             </button>
             {showHistory && (
-              <>
-                <span className="text-sm font-medium text-gray-800">Histórico</span>
-                <button
-                  onClick={onNewConversation}
-                  className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors ml-auto"
-                  title="Nova conversa"
-                >
-                  <Plus size={16} className="text-gray-600" />
-                </button>
-              </>
+              <span className="text-sm font-medium text-gray-800">Histórico</span>
             )}
           </div>
         </div>
